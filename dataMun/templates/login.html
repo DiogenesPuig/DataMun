@@ -1,0 +1,66 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}
+Login
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col s12 " >
+            <div class="card ">
+                <div class="container">
+                    <div class="card-content black-text">
+                        <div class="row center">
+                            <div class="col s12 " >
+                                <span class="flow-text" >Login</span>
+                            </div>
+                            
+                        </div>
+                        <div class="row valign-wrapper" >
+                            <div class="col s12 m12 l12" style="border-right: 1px grey solid">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                        <div class="row center">
+                                            <div class="input-field col s12  ">
+                                                <input name="username" id="username" type="text" class="validate">
+                                                <label for="username">Username</label>
+                                            </div> 
+                                        </div> 
+                                        
+                                        <div class="row center">
+                                            <div class="input-field col s12 ">
+                                                <input name="password" id="password" type="password" class="validate">
+                                                <label for="password">Password</label>
+                                            </div> 
+                                            
+                                        </div>
+                                        <div class="row">
+                                                <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Log in
+                                                    <i class="material-icons right">send</i>
+                                                </button>
+                                        </div>
+
+                                </form>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="card-action">    
+                        
+                        <div class="row center">
+                            No tienes cuenta? <a href="{% url 'register' %}" class="ml-2 green-text">Registrarse</a>
+                        </div>
+                    </div>
+                        
+                    
+                        
+                    
+                </div>
+            </div>
+        </div>  
+    </div>
+</div>
+
+{% endblock %}
