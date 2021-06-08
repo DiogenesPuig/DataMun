@@ -7,3 +7,5 @@ admin.site.register(Zona)
 admin.site.register(Diagnostico)
 admin.site.register(Semana)
 admin.site.register(Paciente)
+
+admin.site.register(Archivo)

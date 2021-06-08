@@ -20,7 +20,16 @@ class UserForm(ModelForm):
 
 
         
-
+class CreateArchivoForm(ModelForm):
+    #last_name = forms.CharField(blank=False)
+    #first_name = forms.CharField(blank=False)
+    class Meta:
+        model = Archivo
+        fields = ['tabla']
+    def __init__(self, *args, **kwargs):
+        super(CreateUserForm, self).__init__(*args, **kwargs)
+        self.fields['tabla'].required = True
+        
 
 
 class CreateUserForm(UserCreationForm):

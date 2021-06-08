@@ -62,11 +62,17 @@ def registerView(request):
 
 
 def homeView(request):
-    context = {
-        'tabla':'tabla',
-    }
+    form = CreateArchivoForm()
     if request.method == "POST":
-        # Si no hay cuenta de Centro asociada al User actual creo una
-        pass
+        form = CreateArchivoForm(request.POST)
+        if form.is_valid():
+            archivo = form.save()
+            tabla = form.cleaned_data.get('tabla')
+
+            messages.success(request, "El archivo " + tabla + ' fue agregado')
+            return redirect('home')
+    context = {
+        'form':form
+    }
         
     return render(request, 'home.html',context)

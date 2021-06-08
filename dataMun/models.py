@@ -26,14 +26,14 @@ class Centro(models.Model):
         return self.nombre
 
 
-edades = [('1', '1'),
-    ('1 / 5', '1 a 5'),
-    ('6 / 9', '6 a 9'),
-    ('10 / 14', '10 a 14'),
-    ('15 / 19', '15 a 19'),
-    ('20 / 54 ', '20 a 54 '),
-    ('55 /  64', '55 a  64'),
-    ('65+', '65 y mas')]
+edades = [( '<1','<1 año'),
+    ( '1 a 5','1 a 5 años'),
+    ( '6 a 9','6 a 9 años'),
+    ( '10 a 14','10 a 14 años'),
+    ('15 a 19','15 a 19 años'),
+    ('20 a 54 ','20 a 54 años'),
+    ('55 a 64','55 a 64 años'),
+    ('65 y mas','65 y mas años')]
 sexo = (
        ('M', ('Masculino')),
        ('F', ('Femenino')),
@@ -54,7 +54,7 @@ class Paciente(models.Model):
     diagnostico = models.ForeignKey(Diagnostico,on_delete=models.CASCADE,blank=True)
     centro = models.ForeignKey(Centro,on_delete=models.CASCADE,blank=True)
     semana = models.ForeignKey(Semana,on_delete=models.CASCADE,blank=True)
-    creacion = models.DateTimeField(blank=True)
+    
     def __str__(self):
         str = 'sexo ' + self.sexo + ' edad ' + self.edad + ' diagnostico ' + self.diagnostico.__str__()
         return str
