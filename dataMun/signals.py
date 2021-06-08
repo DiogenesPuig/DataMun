@@ -19,7 +19,7 @@ def alphabet():
 @receiver(post_save,sender=Archivo)
 def CreateSemana(sender, instance, created, **kwargs):
     archivo = Archivo()
-    if created:
+    if created: #jugar desde aca para abajo
         
         print(instance.tabla )
 
@@ -28,8 +28,9 @@ def CreateSemana(sender, instance, created, **kwargs):
             print("Guardando hoja " + sheet.title)
             semana =None
             try:
-                year = (sheet.title).split[0]
-                semana = (sheet.title).split[1]
+                '2020 5'
+                year = (sheet.title).split(' ')[0]
+                semana = (sheet.title).split(' ')[1]
                 semana = Semana.objects.get(year=year,semana=semana)
                 
                 
@@ -40,8 +41,8 @@ def CreateSemana(sender, instance, created, **kwargs):
             
             if semana == None:
                 try:
-                    year = (sheet.title).split[0]
-                    semana = (sheet.title).split[1]
+                    year = (sheet.title).split(' ')[0]
+                    semana = (sheet.title).split(' ')[1]
                     semana = Semana(year=year,semana=semana,creacion=str(datetime.datetime.time()))
 
 
@@ -59,7 +60,7 @@ def CreateSemana(sender, instance, created, **kwargs):
             letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
             for i in range(0,6):
 
-                if i != 0 and i != 1 and i != 2 and i != 4:
+                if i != 2 and i != 4:
                     
                     print(alphabet()[i])
                     for num in range(1, sheet.max_row):
@@ -201,7 +202,39 @@ def CreateSemana(sender, instance, created, **kwargs):
                                                     #print("No se encontro una cantidad")
                                 except:
                                     print("No se pudo obtener el centro")
+"""
 
+from openpyxl import load_workbook
+
+wb = load_workbook(filename = 'Diagnosticos 1° vez por CS 2021 sem 5 a 12.xlsx')
+
+ws1 = wb['2021 5']
+
+# Esta es muy larga y tediosa pero funcionaria bien
+for row in ws1.iter_rows(min_row=3, max_col=10, max_row=4, values_only=True):
+	vuelta = 0
+	for cell in row:
+		if vuelta == 0:
+			if cell == "      " or cell == None:
+				print('0')
+				vuelta+=1
+			else:
+				print( "zona= "+ str(cell))
+				vuelta+=1
+		elif vuelta == 1:
+			if cell == "      " or cell == None:
+				print('0')
+				vuelta+=1
+			else:
+				print("cod_centro= " +str(cell))
+				vuelta+=1
+		else:
+			if cell == "      " or cell == None:
+				print('0')
+			else:
+				print(cell)
+
+"""
        
         
         
