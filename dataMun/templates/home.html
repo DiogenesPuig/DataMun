@@ -7,7 +7,15 @@ Home
 
 <div class="section white hoverable">
     <div class="row container" >
-        
+        <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file"
+                   title="Upload excel file"
+                   name="tabla"
+                   style="border: 1px solid black; padding: 5px;"
+                   required="required">
+        <input type="submit" >
+        </form>
 
     </div>
 </div>

@@ -42,7 +42,7 @@ sexo = (
 class Semana(models.Model):
     semana = models.IntegerField()
     year = models.IntegerField()
-    creacion = models.DateTimeField(blank=True)
+    
 
 
 

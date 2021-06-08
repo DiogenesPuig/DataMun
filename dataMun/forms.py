@@ -27,8 +27,8 @@ class CreateArchivoForm(ModelForm):
         model = Archivo
         fields = ['tabla']
     def __init__(self, *args, **kwargs):
-        super(CreateUserForm, self).__init__(*args, **kwargs)
-        self.fields['tabla'].required = True
+        super(CreateArchivoForm, self).__init__(*args, **kwargs)
+        
         
 
 
