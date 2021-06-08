@@ -3,6 +3,7 @@
 {% url 'login' as login_url %}
 {% url 'register' as register_url %}
 {% url 'logout' as logout_url %}
+{% url 'uploadFile' as uploadFile_url %}
 <ul id="dropdown1" class="dropdown-content">
 
 	{% if request.user.is_authenticated %}
@@ -31,7 +32,7 @@
 		<ul class="right hide-on-med-and-down">
 			<li><a  class="black-text" href="{{home_url}}"><i class="material-icons left">home</i>Inicio</a></li>
 			<li><a  class="black-text" href=""><i class="material-icons left">book</i>Somos</a></li>
-			
+			<li><a  class="black-text" href="{{uploadFile_url}}"><i class="material-icons left">book</i>Subir Archivo</a></li>
 		    <li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown2"><i class="material-icons right">arrow_drop_down</i>Cuenta                .</a></li>
 
         </ul>
@@ -47,6 +48,7 @@
 <ul id="slide-out" class="sidenav">
 	<li><a  class="black-text" href="{{home_url}}"><i class="material-icons left">home</i>Inicio</a></li>
 	<li><a  class="black-text" href=""><i class="material-icons left">book</i>Somos</a></li>
+	<li><a  class="black-text" href="{{uploadFile_url}}"><i class="material-icons left">book</i>Subir Archivo</a></li>
 	<li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown1"><i class="material-icons right">arrow_drop_down</i>Cuenta                 .</a></li>
 </ul>
 

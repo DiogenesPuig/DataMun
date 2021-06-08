@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.db.models.signals import post_save
+from django.db.models.signals import *
 from django.dispatch import receiver
 
 from django.contrib.auth.models import User
@@ -15,12 +15,17 @@ import datetime
 def alphabet():
   return list(string.ascii_uppercase)
 
-
+"""
 @receiver(post_save,sender=Archivo)
 def CreateSemana(sender, instance, created, **kwargs):
     archivo = Archivo()
-    if created: #jugar desde aca para abajo
+    """
         
-        print(instance.tabla )
 
+@receiver(post_delete, sender=Archivo)
+def clientupload_delete(sender, instance, **kwargs):
+    if instance.tabla:
+        # Pass false so FileField doesn't save the model.
+        instance.tabla.delete(False)
+        
         

@@ -1,0 +1,32 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}
+upload a file
+{% endblock %}
+{% block content %}
+
+<div class="section white hoverable">
+    <div class="row container center" >
+        <h2>Subir un archivo</h2>
+    </div>
+    <div class="row container center" >
+            <div class="col s12">
+                
+                <form method="post" enctype="multipart/form-data">
+                <div class="row left">
+                {% csrf_token %}
+                {{form.as_p}}
+                </div>
+                <div class="row right">
+                    <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Subir archivo
+                        <i class="material-icons right">send</i>
+                    </button>
+                </div>
+                </form>
+            </div>
+    </div>
+</div>
+
+
+
+{%endblock%}

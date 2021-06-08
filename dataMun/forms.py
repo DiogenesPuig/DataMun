@@ -26,6 +26,10 @@ class CreateArchivoForm(ModelForm):
     class Meta:
         model = Archivo
         fields = ['tabla']
+        labels = {
+            'watercourse': 'Archivo excel: ',
+        }
+
     def __init__(self, *args, **kwargs):
         super(CreateArchivoForm, self).__init__(*args, **kwargs)
         

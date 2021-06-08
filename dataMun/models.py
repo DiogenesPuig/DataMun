@@ -42,7 +42,7 @@ sexo = (
 class Semana(models.Model):
     semana = models.IntegerField()
     year = models.IntegerField()
-    
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 
@@ -54,10 +54,11 @@ class Paciente(models.Model):
     diagnostico = models.ForeignKey(Diagnostico,on_delete=models.CASCADE,blank=True)
     centro = models.ForeignKey(Centro,on_delete=models.CASCADE,blank=True)
     semana = models.ForeignKey(Semana,on_delete=models.CASCADE,blank=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         str = 'sexo ' + self.sexo + ' edad ' + self.edad + ' diagnostico ' + self.diagnostico.__str__()
         return str
 
 class Archivo(models.Model):
     tabla = models.FileField( null=True)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -21,6 +21,7 @@ Login
                             <div class="col s12 m12 l12" style="border-right: 1px grey solid">
                                 <form method="POST" action="">
                                     {% csrf_token %}
+                                        <input type="hidden"  name="next" value="{{ request.GET.next }}">
                                         <div class="row center">
                                             <div class="input-field col s12  ">
                                                 <input name="username" id="username" type="text" class="validate">
