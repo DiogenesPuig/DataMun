@@ -7,12 +7,13 @@ from .models import *
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 import openpyxl
 
 import string
 
 from django.forms.utils import ErrorList
-
+import datetime
 def alphabet():
   return list(string.ascii_uppercase)
 
@@ -73,11 +74,85 @@ def registerView(request):
     return render(request, 'register.html', context)
 
 
+
+
+
+class PaceintePorDiagnostico():
+    def __init__(self,cantPacientePorDiagnostico,diagnostico):
+        self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
+        self.diagnostico = diagnostico
+
+
 def homeView(request):
+    pacientes = Paciente.objects.all()
+    pacientesRec = []
+    
+    year = datetime.datetime.now().year
+    semanas = Semana.objects.filter(year=year)
+    maxSem = semanas[0]
+    for semana in semanas:
+        
+        
+        if semana.semana > maxSem.semana:
+            maxSem = semana
+    pacientesRec = Paciente.objects.filter(semana=maxSem)
+
+    
+    diagnosticos = Diagnostico.objects.all()
+    maxDiagnosticos =[]
+    cantPacientesPorDiagnostico = []
+    for diagnostico in diagnosticos:
+        cantDiagn = len(pacientesRec.filter(diagnostico=diagnostico))
+        if cantDiagn != 0 and "TOTALES" not in diagnostico.nombre :
+            maxDiagnosticos.append(diagnostico)
+            cantPacientesPorDiagnostico.append(cantDiagn)
+        
+    
+    
+    n = len(maxDiagnosticos)
+    print(str(n))
+    # Traverse through all array elements
+    max = 0
+    for i in range(n-1):
+    # range(n) also work but outer loop will repeat one time more than needed.
+  
+        # Last i elements are already in place
+        
+        for j in range(0, n-i-1):
+  
+            # traverse the array from 0 to n-i-1
+            # Swap if the element found is greater
+            # than the next element
+            if cantPacientesPorDiagnostico[j] <  cantPacientesPorDiagnostico[j + 1] :
+                l = maxDiagnosticos[j]
+                maxDiagnosticos[j] = maxDiagnosticos[j + 1]
+                maxDiagnosticos[j + 1] = l 
+                l = cantPacientesPorDiagnostico[j]
+                cantPacientesPorDiagnostico[j] = cantPacientesPorDiagnostico[j + 1]
+                cantPacientesPorDiagnostico[j + 1] = l 
+        if i == 50:
+            break
+                
+                
+            
+    
+    pacientePorDiagnosticos = []
+    for l in range(0,len(maxDiagnosticos)):
+        pacientePorDiagnostico = PaceintePorDiagnostico(diagnostico=maxDiagnosticos[l],cantPacientePorDiagnostico=cantPacientesPorDiagnostico[l])
+        pacientePorDiagnosticos.append(pacientePorDiagnostico)
+
+    paginator = Paginator(pacientePorDiagnosticos,50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
+        'semana':maxSem,
+        'pacientePorDiagnosticos':page_obj,
         
     }
     return render(request, 'home.html',context)
+
+
+
 
 @login_required()
 def uploadFileView(request):
