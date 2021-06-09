@@ -8,4 +8,5 @@ urlpatterns = [
     path('logout/', logoutView, name="logout"),
     path('perfil/', perfilView, name="perfil"),
     path('uploadFile/', uploadFileView, name="uploadFile"),
+    path('diagnostic/<str:codigo_diagnostic>',diagnosticView,name="diagnostic"),
 ]
