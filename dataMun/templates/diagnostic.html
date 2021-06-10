@@ -19,41 +19,45 @@ Home
             <h5>Diagnostico {{diagnostico.nombre}}</h5>
             </div>
             
-            <canvas id="myChart" width="400" height="400"></canvas>
+            <canvas id="myChart" width="100" height="100"></canvas>
             <script>
             var ctx = document.getElementById('myChart').getContext('2d');
-            const labels = [{% for i in medias %}{{i.year}},{% endfor %}]
+            const labels = [{% for i in medias %}{{i.year}},2022{% endfor %}]
             const data = {
             labels: labels,
             datasets: [{
+                label: 'Peligro',
+                data: [{% for i in medias %}{{i.rangoSuperior}},2500{% endfor %}],
+                
+                
+                borderColor: 'rgba(255,0,0,0.8)',
+                
+                tension: 0.1
+            },
+            {
                 label: 'media',
-                data: [{% for i in medias %}{{i.media}},{% endfor %}],
-                fill: 'origin',
-                borderColor: 'rgb(125, 0, 0)',
-                fillColor: 'rgb(125, 0, 0)',
+                data: [{% for i in medias %}{{i.media}},500{% endfor %}],
+                fill: {target: '0'},
+                backgroundColor: 'rgba(255, 28, 64, 0.4)',
+                borderColor: 'rgba(255,255,0,0.8)',
+                
+                
                 tension: 0.1
             },
             {
                 label: 'Ok',
-                data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
-                fill: 'origin',
-
-                borderColor: 'rgb(0, 255, 255)',
-                tension: 0.1
-            },
-            {
-                label: 'Peligro',
-                data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
-                fill: 'origin',
+                data: [{% for i in medias %}{{i.rangoInferior}},100{% endfor %}],
+                fill: {target: '1' },
+                backgroundColor: 'rgba(203, 148, 85, 0.4)',
+                borderColor: 'rgba(0,255,0,0.8)',
                 
-                borderColor: 'rgb(255, 0, 0)',
-                fillColor: 'rgb(125, 0, 0)',
                 tension: 0.1
             }]
             };
             const config = {
                 type: 'line',
                 data: data,
+                
             };
             var myChart = new Chart(ctx,config)
             </script>
