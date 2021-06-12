@@ -38,10 +38,14 @@ sexo = (
        ('M', ('Masculino')),
        ('F', ('Femenino')),
        )
+class Archivo(models.Model):
+    tabla = models.FileField( null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Semana(models.Model):
     semana = models.IntegerField()
     year = models.IntegerField()
+    archivo = models.ForeignKey(Archivo,on_delete=models.CASCADE,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -59,6 +63,3 @@ class Paciente(models.Model):
         str = 'sexo ' + self.sexo + ' edad ' + self.edad + ' diagnostico ' + self.diagnostico.__str__()
         return str
 
-class Archivo(models.Model):
-    tabla = models.FileField( null=True)
-    created_at = models.DateTimeField(auto_now_add=True)

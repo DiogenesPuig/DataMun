@@ -14,6 +14,7 @@ import string
 
 from django.forms.utils import ErrorList
 import datetime
+import threading
 
 
 # Create your views here.
@@ -83,71 +84,75 @@ class PaceintePorDiagnostico():
 
 
 def homeView(request):
-    pacientes = Paciente.objects.all()
-    pacientesRec = []
-    
-    year = datetime.datetime.now().year
-    semanas = Semana.objects.filter(year=year)
-    maxSem = semanas[0]
-    for semana in semanas:
+    try:
+        pacientes = Paciente.objects.all()
+        pacientesRec = []
         
-        
-        if semana.semana > maxSem.semana:
-            maxSem = semana
-    pacientesRec = Paciente.objects.filter(semana=maxSem)
-
-    
-    diagnosticos = Diagnostico.objects.all()
-    maxDiagnosticos =[]
-    cantPacientesPorDiagnostico = []
-    for diagnostico in diagnosticos:
-        cantDiagn = len(pacientesRec.filter(diagnostico=diagnostico))
-        if cantDiagn != 0 and "TOTALES" not in diagnostico.nombre :
-            maxDiagnosticos.append(diagnostico)
-            cantPacientesPorDiagnostico.append(cantDiagn)
-        
-    
-    
-    n = len(maxDiagnosticos)
-    print(str(n))
-    # Traverse through all array elements
-    max = 0
-    for i in range(n-1):
-    # range(n) also work but outer loop will repeat one time more than needed.
-  
-        # Last i elements are already in place
-        
-        for j in range(0, n-i-1):
-  
-            # traverse the array from 0 to n-i-1
-            # Swap if the element found is greater
-            # than the next element
-            if cantPacientesPorDiagnostico[j] <  cantPacientesPorDiagnostico[j + 1] :
-                l = maxDiagnosticos[j]
-                maxDiagnosticos[j] = maxDiagnosticos[j + 1]
-                maxDiagnosticos[j + 1] = l 
-                l = cantPacientesPorDiagnostico[j]
-                cantPacientesPorDiagnostico[j] = cantPacientesPorDiagnostico[j + 1]
-                cantPacientesPorDiagnostico[j + 1] = l 
-        if i == 50:
-            break
-                
-                
+        year = datetime.datetime.now().year
+        semanas = Semana.objects.filter(year=year)
+        maxSem = semanas[0]
+        for semana in semanas:
             
-    
-    pacientePorDiagnosticos = []
-    for l in range(0,len(maxDiagnosticos)):
-        pacientePorDiagnostico = PaceintePorDiagnostico(diagnostico=maxDiagnosticos[l],cantPacientePorDiagnostico=cantPacientesPorDiagnostico[l])
-        pacientePorDiagnosticos.append(pacientePorDiagnostico)
+            
+            if semana.semana > maxSem.semana:
+                maxSem = semana
+        pacientesRec = Paciente.objects.filter(semana=maxSem)
 
-    paginator = Paginator(pacientePorDiagnosticos,50)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    context = {
-        'semana':maxSem,
-        'pacientePorDiagnosticos':page_obj,
         
-    }
+        diagnosticos = Diagnostico.objects.all()
+        maxDiagnosticos =[]
+        cantPacientesPorDiagnostico = []
+        for diagnostico in diagnosticos:
+            cantDiagn = len(pacientesRec.filter(diagnostico=diagnostico))
+            if cantDiagn != 0 and "TOTALES" not in diagnostico.nombre :
+                maxDiagnosticos.append(diagnostico)
+                cantPacientesPorDiagnostico.append(cantDiagn)
+            
+        
+        
+        n = len(maxDiagnosticos)
+        print(str(n))
+        # Traverse through all array elements
+        max = 0
+        for i in range(n-1):
+        # range(n) also work but outer loop will repeat one time more than needed.
+    
+            # Last i elements are already in place
+            
+            for j in range(0, n-i-1):
+    
+                # traverse the array from 0 to n-i-1
+                # Swap if the element found is greater
+                # than the next element
+                if cantPacientesPorDiagnostico[j] <  cantPacientesPorDiagnostico[j + 1] :
+                    l = maxDiagnosticos[j]
+                    maxDiagnosticos[j] = maxDiagnosticos[j + 1]
+                    maxDiagnosticos[j + 1] = l 
+                    l = cantPacientesPorDiagnostico[j]
+                    cantPacientesPorDiagnostico[j] = cantPacientesPorDiagnostico[j + 1]
+                    cantPacientesPorDiagnostico[j + 1] = l 
+            if i == 50:
+                break
+                    
+                    
+                
+        
+        pacientePorDiagnosticos = []
+        for l in range(0,len(maxDiagnosticos)):
+            pacientePorDiagnostico = PaceintePorDiagnostico(diagnostico=maxDiagnosticos[l],cantPacientePorDiagnostico=cantPacientesPorDiagnostico[l])
+            pacientePorDiagnosticos.append(pacientePorDiagnostico)
+
+        paginator = Paginator(pacientePorDiagnosticos,50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {
+            'semana':maxSem,
+            'pacientePorDiagnosticos':page_obj,
+            
+        }
+    except:
+        pass
+        context = {}
     return render(request, 'home.html',context)
 
 
@@ -175,13 +180,15 @@ def uploadFileView(request):
         if form.is_valid():
             tabla = request.FILES["tabla"]
             archivo = form.save()
-
-            success  = read_excel(request.FILES["tabla"])
+            archivo = Archivo.objects.get(pk=archivo.id)
+            success = read_excel(archivo)
             
-            if len(success[1]) != 1:
+            
+            
+            if len(success) != 1:
                 archivo = Archivo.objects.get(pk=archivo.id)
                 archivo.delete()
-                for error in success[1]:
+                for error in success:
                     if error[0] == 1:
 
                         form._errors["tabla"] = ErrorList([u" El archivo subido debe ser excel."])
