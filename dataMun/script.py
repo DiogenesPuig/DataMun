@@ -171,13 +171,20 @@ def read_excel(archivo):
                                                         edad = ""
                                                         if (l+1 )%2 != 0:
 
-                                                            edad = str(sheet[letras[l-1] + "1"].value).strip(" años")
-                                                            sexo = "F"
-                                                        else:
-                                                            edad = str(sheet[letras[l] + "1"].value).strip(" años")
+                                                            
+                                                            
                                                             sexo = "M"
-                                                        edad = edad.strip(" año")
+                                                            edad = str(sheet[letras[l] + "1"].value)
+                                                        else:
+                                                            
+                                                            edad = str(sheet[letras[l-1] + "1"].value)
+                                                            sexo = "F"
                                                         
+                                                        
+
+                                                        edad = edad.strip(" años")
+                                                        edad = edad.strip(" año")
+                                                       
                                                         #print("sexo " + sexo)
                                                         #print("edad " + edad)
                                                         try: 
