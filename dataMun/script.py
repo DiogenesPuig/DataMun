@@ -238,7 +238,10 @@ def funcionGrafico1(pacientes, diagnostico, yearInit, yearStop):
         for semana in semanaYear:
             year = semana.year
 
-            suma += pacientes.filter(semana=semana).count()
+            pac = pacientes.filter(semana=semana)
+            
+            for i in pac:
+                suma += i.cant_casos
             casosPerSemana.append(pacientes.filter(semana=semana).count())
 
         casosPerYears.append(casosPerSemana)

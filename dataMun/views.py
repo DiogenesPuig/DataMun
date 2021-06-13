@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 import openpyxl
 from .script import *
 import string
+from .filters import *
 
 from django.forms.utils import ErrorList
 import datetime
@@ -84,10 +85,10 @@ class PaceintePorDiagnostico():
 
 
 def homeView(request):
+
+    
     try:
-        pacientes = Paciente.objects.all()
-        pacientesRec = []
-        
+    
         year = datetime.datetime.now().year
         semanas = Semana.objects.filter(year=year)
         maxSem = semanas[0]
@@ -103,10 +104,14 @@ def homeView(request):
         maxDiagnosticos =[]
         cantPacientesPorDiagnostico = []
         for diagnostico in diagnosticos:
-            cantDiagn = len(pacientesRec.filter(diagnostico=diagnostico))
-            if cantDiagn != 0 and "TOTALES" not in diagnostico.nombre :
-                maxDiagnosticos.append(diagnostico)
-                cantPacientesPorDiagnostico.append(cantDiagn)
+            if  "TOTALES" not in diagnostico.nombre :
+                pac = pacientesRec.filter(diagnostico=diagnostico)
+                cantDiagn = 0
+                for i in pac:
+                    cantDiagn += i.cant_casos
+                if cantDiagn != 0 :
+                    maxDiagnosticos.append(diagnostico)
+                    cantPacientesPorDiagnostico.append(cantDiagn)
             
         
         
@@ -116,11 +121,11 @@ def homeView(request):
         max = 0
         for i in range(n-1):
         # range(n) also work but outer loop will repeat one time more than needed.
-    
+
             # Last i elements are already in place
             
             for j in range(0, n-i-1):
-    
+
                 # traverse the array from 0 to n-i-1
                 # Swap if the element found is greater
                 # than the next element
@@ -160,10 +165,12 @@ def homeView(request):
 def diagnosticView(request,codigo_diagnostic):
     diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
     pacientes = Paciente.objects.all()
-    medias = funcionGrafico1(pacientes,diagnostico,0,2022)
+    f = PacienteFilter(request.GET, queryset=pacientes)
+    medias = funcionGrafico1(f.qs,diagnostico,0,2022)
     context = {
         'medias':medias,
-        'diagnostico':diagnostico
+        'diagnostico':diagnostico,
+        'filter': f
     }
     return render(request, 'diagnostic.html',context)
 

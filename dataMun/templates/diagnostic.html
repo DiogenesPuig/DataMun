@@ -13,54 +13,76 @@ Home
 }
 </style>
 <div class="section white hoverable">
-    <div class="row container" >
+    <div class="row " >
         <div class="col s12" >
             <div class="row center" >
-            <h5>Diagnostico {{diagnostico.nombre}}</h5>
-            </div>
+                <h5>Diagnostico {{diagnostico.nombre}}</h5>
             
-            <canvas id="myChart" width="100" height="100"></canvas>
-            <script>
-            var ctx = document.getElementById('myChart').getContext('2d');
-            const labels = [{% for i in medias %}{{i.year}},2022{% endfor %}]
-            const data = {
-            labels: labels,
-            datasets: [{
-                label: 'Peligro',
-                data: [{% for i in medias %}{{i.rangoSuperior}},2500{% endfor %}],
+            
+            </div>
+            <div class="row center" >
+                <div class="col s12 m5 l5">
+                    
+                   
+                    <canvas id="myChart" ></canvas>
+                    <script>
+                    var ctx = document.getElementById('myChart').getContext('2d');
+                    const labels = [{% for i in medias %}{{i.year}},{% endfor %}]
+                    const data = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peligro',
+                        data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
+                        
+                        
+                        borderColor: 'rgba(255,0,0,0.8)',
+                        
+                        tension: 0.1
+                    },
+                    {
+                        label: 'media',
+                        data: [{% for i in medias %}{{i.media}},{% endfor %}],
+                        fill: {target: '0'},
+                        backgroundColor: 'rgba(255, 28, 64, 0.4)',
+                        borderColor: 'rgba(255,255,0,0.8)',
+                        
+                        
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Ok',
+                        data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
+                        fill: {target: '1' },
+                        backgroundColor: 'rgba(203, 148, 85, 0.4)',
+                        borderColor: 'rgba(0,255,0,0.8)',
+                        
+                        tension: 0.1
+                    }]
+                    };
+                    const config = {
+                        type: 'line',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                        }   
+                    };
+                    var myChart = new Chart(ctx,config)
+                    </script>
                 
-                
-                borderColor: 'rgba(255,0,0,0.8)',
-                
-                tension: 0.1
-            },
-            {
-                label: 'media',
-                data: [{% for i in medias %}{{i.media}},500{% endfor %}],
-                fill: {target: '0'},
-                backgroundColor: 'rgba(255, 28, 64, 0.4)',
-                borderColor: 'rgba(255,255,0,0.8)',
-                
-                
-                tension: 0.1
-            },
-            {
-                label: 'Ok',
-                data: [{% for i in medias %}{{i.rangoInferior}},100{% endfor %}],
-                fill: {target: '1' },
-                backgroundColor: 'rgba(203, 148, 85, 0.4)',
-                borderColor: 'rgba(0,255,0,0.8)',
-                
-                tension: 0.1
-            }]
-            };
-            const config = {
-                type: 'line',
-                data: data,
-                
-            };
-            var myChart = new Chart(ctx,config)
-            </script>
+                    
+                </div>
+                <div class="col s12 m1 l1">
+                     <form method="get">
+                        {{ filter.form.as_p }}
+                        
+                        <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Filtrar
+                    
+                            <i class="material-icons right">search</i>
+                        </button>
+                    </form>
+                </div>
+            </div>
 
             
             
