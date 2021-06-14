@@ -83,7 +83,7 @@ class PaceintePorDiagnostico():
         self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
         self.diagnostico = diagnostico
 
-
+@login_required()
 def homeView(request):
 
     
@@ -161,12 +161,12 @@ def homeView(request):
     return render(request, 'home.html',context)
 
 
-
+@login_required()
 def diagnosticView(request,codigo_diagnostic):
     diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
     pacientes = Paciente.objects.all()
     f = PacienteFilter(request.GET, queryset=pacientes)
-    medias = funcionGrafico1(f.qs,diagnostico,0,2022)
+    medias = funcionGrafico1(f.qs,diagnostico,2021)
     context = {
         'medias':medias,
         'diagnostico':diagnostico,

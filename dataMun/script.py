@@ -4,7 +4,7 @@ import openpyxl
 import string
 from .models import *
 import math
-
+import random
 
 def alphabet():
     return list(string.ascii_lowercase)
@@ -174,7 +174,9 @@ def read_excel(archivo):
 
                                                     edad = edad.strip(" años")
                                                     edad = edad.strip(" año")
-
+                                                    
+                                                    cant = random.randint(1, cant*2)
+                                                    
                                                     # print("sexo " + sexo)
                                                     # print("edad " + edad)
                                                     try:
@@ -196,78 +198,85 @@ def read_excel(archivo):
 
 
 class FuncionGrafico1():
-    def __init__(self, media, year, rangoInferior, rangoSuperior):
+    def __init__(self, media, semana, rangoInferior, rangoSuperior,cant_casos):
         self.media = media
-        self.year = year
+        self.semana = semana
         self.rangoInferior = rangoInferior
         self.rangoSuperior = rangoSuperior
+        self.cant_casos = cant_casos
 
     def __str__(self):
         return "media: " + str(self.media) + " year: " + str(self.year)
 
 
-def funcionGrafico1(pacientes, diagnostico, yearInit, yearStop):
-    semanas = Semana.objects.filter(year__gte=yearInit).filter(year__lt=yearStop).order_by("year")
-
-    semanasYear = []
-    semanaYear = []
-    year = semanas[0].year
-    for semana in semanas:
-
-        if semana.year != year:
-            semanasYear.append(semanaYear)
-
-            semanaYear = []
-
-        semanaYear.append(semana)
-
-        year = semana.year
-    if len(semanasYear) == 0:
-        semanasYear.append(semanaYear)
-
+def funcionGrafico1(pacientes, diagnostico, year ):
+    semanas = Semana.objects.order_by("year").filter(year__lte=year)
+    
     pacientes = pacientes.filter(diagnostico=diagnostico)
-    casosPerYears = []
-    funcionesGrafico1 = []
-    medias = []
-    for semanaYear in semanasYear:
 
-        media = 0
-        suma = 0
-        year = 0
-        casosPerSemana = []
-        for semana in semanaYear:
-            year = semana.year
-
-            pac = pacientes.filter(semana=semana)
+    medias = [0] *52
+    desviacionesEstandar = [0] * 52
+    cantidadesSemana = [0] * 52
+    cantidadesCasos = [0] * 52
+    
+    for i in range(len(medias)) :
+        cantSemanas = 0
+        cantidadCasos = 0 
+        sumas = []
+        
+        for semana in semanas:
+            if semana.semana == i+1:
+                pac = pacientes.filter(semana=semana)
+                
+                for p in pac:
+                    
+                    cantidadCasos += p.cant_casos
+                sumas.append(cantidadCasos)
+                cantSemanas += 1
+                    
+                
+                
+        
+       
             
-            for i in pac:
-                suma += i.cant_casos
-            casosPerSemana.append(pacientes.filter(semana=semana).count())
+        if cantidadCasos != 0:
+            cantidadesCasos[i] = cantidadCasos
+            media = cantidadCasos / cantSemanas
+            
+            medias[i] = media
+            desviacionEstandar = 0 
+            if len(sumas) != 1:
+                suma2 = 0 
+                for cantidadCasos in sumas:
+                    suma2 += (cantidadCasos-media)**2
+                desviacionEstandar = math.sqrt(suma2 / len(sumas))
+                
+            desviacionesEstandar[i] = desviacionEstandar
 
-        casosPerYears.append(casosPerSemana)
+            cantidadesSemana[i] = cantSemanas
 
-        media = suma / len(semanaYear)
-        medias.append(media)
-    desviacionesEstandar = []
-    suma = 0
+    cantidadCasos =  0
     for media in medias:
-        suma += media
-    prom = suma / len(medias)
+        cantidadCasos += media
 
-    for casosPerSemanas in casosPerYears:
-        suma = 0
+    prom = cantidadCasos/len(medias)
+        
+        
+    
 
-        for casosPerSemana in casosPerSemanas:
-            suma += (casosPerSemana - prom) ** 2
 
-        desviacionEstandar = math.sqrt(suma / len(casosPerSemanas))
-        desviacionesEstandar.append(desviacionEstandar)
+    
 
-    for desviacionEstandar in desviacionesEstandar:
-        rangoInferior = prom - (3.18 * desviacionEstandar / math.sqrt(len(semanasYear)))
-        rangoSuperior = prom + (3.18 * desviacionEstandar / math.sqrt(len(semanasYear)))
+    funcionesGrafico1 = []
+    for i in range(len(desviacionesEstandar)):
+        rangoInferior = 0
+        rangoSuperior = 0
+        if cantidadesSemana[i] !=0:
+            rangoInferior = medias[i] - (3.18 * desviacionesEstandar[i] / math.sqrt(cantidadesSemana[i]))
+            rangoSuperior = medias[i] + (3.18 * desviacionesEstandar[i] / math.sqrt(cantidadesSemana[i]))
+        
 
-        funcion = FuncionGrafico1(media, year, rangoInferior, rangoSuperior)
+        funcion = FuncionGrafico1(medias[i],i+1, rangoInferior, rangoSuperior,cantidadesCasos[i])
         funcionesGrafico1.append(funcion)
 
     return funcionesGrafico1

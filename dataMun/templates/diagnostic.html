@@ -27,10 +27,16 @@ Home
                     <canvas id="myChart" ></canvas>
                     <script>
                     var ctx = document.getElementById('myChart').getContext('2d');
-                    const labels = [{% for i in medias %}{{i.year}},{% endfor %}]
+                    const labels = [{% for i in medias %}{{i.semana}},{% endfor %}]
                     const data = {
                     labels: labels,
                     datasets: [{
+                        label: 'Casos',
+                        data: [{% for i in medias %}{{i.cant_casos}},{% endfor %}],
+                        borderColor: 'rgba(0,0,0,0.8)',
+                        tension: 0.1
+                    },
+                    {
                         label: 'Peligro',
                         data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
                         
@@ -42,7 +48,7 @@ Home
                     {
                         label: 'media',
                         data: [{% for i in medias %}{{i.media}},{% endfor %}],
-                        fill: {target: '0'},
+                        fill: {target: '1'},
                         backgroundColor: 'rgba(255, 28, 64, 0.4)',
                         borderColor: 'rgba(255,255,0,0.8)',
                         
@@ -50,9 +56,9 @@ Home
                         tension: 0.1
                     },
                     {
-                        label: 'Ok',
+                        label: 'objetivo',
                         data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
-                        fill: {target: '1' },
+                        fill: {target: '2' },
                         backgroundColor: 'rgba(203, 148, 85, 0.4)',
                         borderColor: 'rgba(0,255,0,0.8)',
                         
@@ -65,6 +71,17 @@ Home
                         options: {
                             responsive: true,
                             maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    display: true,
+                                    title: 'semanas'
+                                },
+                                y: {
+                                    display: true,
+                                    title: 'casos'
+                                    
+                                }
+                            }
                         }   
                     };
                     var myChart = new Chart(ctx,config)
