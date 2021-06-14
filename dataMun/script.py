@@ -94,6 +94,7 @@ def read_excel(archivo):
                             ndiagnostico = Diagnostico(codigo=cod, nombre=diag)
                             ndiagnostico.save()
                             diagnosticosCod.append(cod)
+
                         try:
                             ocentro = Centro.objects.get(codigo=cs)
                             odiagnostico = Diagnostico.objects.get(codigo=cod)
@@ -102,7 +103,9 @@ def read_excel(archivo):
                             ocentro = None
                             odiagnostico = None
 
+
                         if ocentro != None and odiagnostico != None:
+
                             try:
                                 for i in (0,len(letras)-1):
                                     sexo = ""
@@ -118,6 +121,7 @@ def read_excel(archivo):
 
                                     edad = edad.strip(" años")
                                     edad = edad.strip(" año")
+                                    #podria ser un try
                                     npaciente = Paciente(sexo=sexo,edad=edad,cant_casos=cant,
                                                          diagnostico=odiagnostico,centro=ocentro,semana=semana)
                                     npaciente.save()
