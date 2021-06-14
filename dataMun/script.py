@@ -19,58 +19,58 @@ def read_excel(archivo):
     cs=0
     cname=""
     diag=""
+    try:
+        workbook = openpyxl.load_workbook(archivo.tabla)
+        alphabe = alphabet()
+        letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
+        centros = Centro.objects.all()
+        centrosCod = []
+        for i in centros:
+            centrosCod.append(i.codigo)
 
-    workbook = openpyxl.load_workbook(archivo.tabla)
-    alphabe = alphabet()
-    letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
-    centros = Centro.objects.all()
-    centrosCod = []
-    for i in centros:
-        centrosCod.append(i.codigo)
+        diagnosticos = Diagnostico.objects.all()
+        diagnosticosCod = []
+        for i in diagnosticos:
+            diagnosticosCod.append(i.codigo)
 
-    diagnosticos = Diagnostico.objects.all()
-    diagnosticosCod = []
-    for i in diagnosticos:
-        diagnosticosCod.append(i.codigo)
+        zonas = Zona.objects.all()
+        zonasCod = []
+        for i in zonas:
+            zonasCod.append(i.codigo)
 
-    zonas = Zona.objects.all()
-    zonasCod = []
-    for i in zonas:
-        zonasCod.append(i.codigo)
-
-    for sheet in workbook.worksheets:
-        print("Saving week: " + sheet.title)
-        crearPacientes = False
-        try:
-            year = (sheet.title).split(' ')[0]
-            semana = (sheet.title).split(' ')[1]
-            semana = Semana.objects.get(year=year, semana=semana)
-
+        for sheet in workbook.worksheets:
+            print("Saving week: " + sheet.title)
             crearPacientes = False
-            # print("zona obtained")
-        except:
-            semana = None
-
-        if semana == None:
             try:
                 year = (sheet.title).split(' ')[0]
                 semana = (sheet.title).split(' ')[1]
-                semana = Semana(year=year, semana=semana, archivo=archivo)
-
-                semana.save(force_insert=True)
-                semana = (sheet.title).split(' ')[1]
                 semana = Semana.objects.get(year=year, semana=semana)
-                print("week added")
-                crearPacientes = True
-            except:
-                print("error: week dont added correctly.")
-                error = [2, "(week dont added correctly.),"]
-                errors.append(error)
 
                 crearPacientes = False
+                # print("zona obtained")
+            except:
+                semana = None
 
-        if crearPacientes:
-            try:
+            if semana == None:
+                try:
+                    year = (sheet.title).split(' ')[0]
+                    semana = (sheet.title).split(' ')[1]
+                    semana = Semana(year=year, semana=semana, archivo=archivo)
+
+                    semana.save(force_insert=True)
+                    semana = (sheet.title).split(' ')[1]
+                    semana = Semana.objects.get(year=year, semana=semana)
+                    print("week added")
+                    crearPacientes = True
+                except:
+                    print("error: week dont added correctly.")
+                    error = [2, "(week dont added correctly.),"]
+                    errors.append(error)
+
+                    crearPacientes = False
+
+            if crearPacientes:
+                
                 for row in sheet.iter_rows(values_only=True):
                     if row[4] != "Totales":
                         try:
@@ -79,6 +79,7 @@ def read_excel(archivo):
                             cname = str(row[2])
                             cod = str(row[3])
                             diag = str(row[4])
+
                         except:
                             pass
                         if zona not in zonasCod:
@@ -105,12 +106,18 @@ def read_excel(archivo):
 
 
                         if ocentro != None and odiagnostico != None:
-
-                            try:
-                                for i in (0,len(letras)-1):
-                                    sexo = ""
-                                    edad = ""
-                                    cant = 0
+                            
+                            
+                            for i in (0,len(letras)-1):
+                                
+                                    
+                                sexo = ""
+                                edad = ""
+                                try:
+                                    cant = int(row[i+5])
+                                except:
+                                    cant = None 
+                                if cant != None:
 
                                     if (i+1) % 2 != 0:
                                         sexo = "M"
@@ -122,14 +129,15 @@ def read_excel(archivo):
                                     edad = edad.strip(" años")
                                     edad = edad.strip(" año")
                                     #podria ser un try
-                                    npaciente = Paciente(sexo=sexo,edad=edad,cant_casos=cant,
-                                                         diagnostico=odiagnostico,centro=ocentro,semana=semana)
-                                    npaciente.save()
-                            except:
-                                print("Error creando el paciente")
-            except:
-                error = [1, "(File is not a zip file.),"]
-                errors.append(error)
+                                    try:
+                                        npaciente = Paciente(sexo=sexo,edad=edad,cant_casos=cant,
+                                                        diagnostico=odiagnostico,centro=ocentro,semana=semana)
+                                        npaciente.save()
+                                    except:
+                                        print("Error creando el paciente")
+    except:
+        error = [1, "(File is not a zip file.),"]
+        errors.append(error)
     return errors
 
 
