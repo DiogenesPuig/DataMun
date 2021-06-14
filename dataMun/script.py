@@ -14,184 +14,146 @@ def read_excel(archivo):
     errors = ["None"]
     print(archivo.tabla)
 
-    try:
+    codigo=0
+    workbook = openpyxl.load_workbook(archivo.tabla)
+    alphabe = alphabet()
+    letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
+    centros = Centro.objects.all()
+    centrosCod = []
+    for i in centros:
+        centrosCod.append(i.codigo)
 
-        workbook = openpyxl.load_workbook(archivo.tabla)
-        alphabe = alphabet()
-        letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
-        centros = Centro.objects.all()
-        centrosCod = []
-        for i in centros:
-            centrosCod.append(i.codigo)
+    diagnosticos = Diagnostico.objects.all()
+    diagnosticosCod = []
+    for i in diagnosticos:
+        diagnosticosCod.append(i.codigo)
 
-        diagnosticos = Diagnostico.objects.all()
-        diagnosticosCod = []
-        for i in diagnosticos:
-            diagnosticosCod.append(i.codigo)
+    zonas = Zona.objects.all()
+    zonasCod = []
+    for i in zonas:
+        zonasCod.append(i.codigo)
 
-        zonas = Zona.objects.all()
-        zonasCod = []
-        for i in zonas:
-            zonasCod.append(i.codigo)
+    for sheet in workbook.worksheets:
+        print("Saving week: " + sheet.title)
+        crearPacientes = False
+        try:
+            year = (sheet.title).split(' ')[0]
+            semana = (sheet.title).split(' ')[1]
+            semana = Semana.objects.get(year=year, semana=semana)
 
-        for sheet in workbook.worksheets:
-            print("Saving week: " + sheet.title)
             crearPacientes = False
+            # print("zona obtained")
+        except:
+            semana = None
+
+        if semana == None:
             try:
                 year = (sheet.title).split(' ')[0]
                 semana = (sheet.title).split(' ')[1]
+                semana = Semana(year=year, semana=semana, archivo=archivo)
+
+                semana.save(force_insert=True)
+                semana = (sheet.title).split(' ')[1]
                 semana = Semana.objects.get(year=year, semana=semana)
+                print("week added")
+                crearPacientes = True
+            except:
+                print("error: week dont added correctly.")
+                error = [2, "(week dont added correctly.),"]
+                errors.append(error)
 
                 crearPacientes = False
-                # print("zona obtained")
-            except:
-                semana = None
 
-            if semana == None:
-                try:
-                    year = (sheet.title).split(' ')[0]
-                    semana = (sheet.title).split(' ')[1]
-                    semana = Semana(year=year, semana=semana, archivo=archivo)
-
-                    semana.save(force_insert=True)
-                    semana = (sheet.title).split(' ')[1]
-                    semana = Semana.objects.get(year=year, semana=semana)
-                    print("week added")
-                    crearPacientes = True
-                except:
-                    print("error: week dont added correctly.")
-                    error = [2, "(week dont added correctly.),"]
-                    errors.append(error)
-
-                    crearPacientes = False
-
-            if crearPacientes:
-
-                for i in range(0, 6):
-                    if i != 2 and i != 4:
-                        print(alphabe[i])
-                        for num in range(1, sheet.max_row):
-                            if num != 1 and num != 2:
-                                celda = str(sheet[alphabe[i] + str(num)].value)
-                                """
-                                try:
-                                    print("celda: " +alphabet()[i] + str(num) + " value: " + str(celda))
-                                except:
-                                    print("celda: " +alphabet()[i] + str(num) + " value: none" )"""
-
-                                if i == 0:
+        if crearPacientes:
+            i = 0
+            for row in sheet.iter_rows(values_only=True):
+                for cell in row:
+                    if i == 0:
+                        print("0")
+                        try:
+                            codigo = int(cell)
+                        except:
+                            pass
+                        if codigo not in zonasCod:
+                            try:
+                                zona = Zona(codigo=codigo)
+                                zona.save(force_insert=True)
+                                zonasCod.append(codigo)
+                            except:
+                                pass
+                    elif i == 1:
+                        print("1")
+                        try:
+                            codigo = int(cell)
+                        except:
+                            pass
+                        if codigo not in centrosCod:
+                            try:
+                                zona = Zona.objects.get(codigo=int(str(row[1])))
+                                new_centro = Centro(codigo=codigo,nombre=row[2],zona=zona)
+                                new_centro.save(force_insert=True)
+                                centrosCod.append(int(cell))
+                            except:
+                                pass
+                    elif i == 3:
+                        print("3")
+                        try:
+                            codigo = str(cell)
+                        except:
+                            pass
+                        if codigo not in diagnosticosCod and codigo != 'None':
+                            try:
+                                new_diagnostico = Diagnostico(codigo=codigo,nombre=str(row[4]))
+                                new_diagnostico.save(force_insert=True)
+                                diagnosticosCod.append(str(cell))
+                            except:
+                                pass
+                    elif i == 5:
+                        print("5")
+                        if row[4] != "TOTALES":
+                            try:
+                                diagnostico = Diagnostico.objects.get(codigo=row[3])
+                            except:
+                                diagnostico = None
+                            try:
+                                centro = Centro.objects.get(codigo=row[1])
+                            except:
+                                centro = None
+                            if centro != None and diagnostico != None:
+                                for l in range(0, len(letras)):
                                     try:
-                                        codigo = int(celda)
-                                    except:
-                                        pass
-                                    if codigo not in zonasCod:
-                                        try:
-                                            zona = Zona(codigo=int(celda))
+                                        cant = int(cell)
 
-                                            zona.save(force_insert=True)
-                                            zonasCod.append(int(celda))
-                                            # print("zona added")
+                                        sexo = ""
+                                        edad = ""
+                                        if (l + 1) % 2 != 0:
+                                            sexo = "M"
+                                            edad = str(sheet[letras[l] + "1"].value)
+                                        else:
+
+                                            edad = str(sheet[letras[l - 1] + "1"].value)
+                                            sexo = "F"
+
+                                        edad = edad.strip(" años")
+                                        edad = edad.strip(" año")
+
+                                        # print("sexo " + sexo)
+                                        # print("edad " + edad)
+                                        try:
+                                            paciente = Paciente(sexo=sexo, edad=edad,
+                                                                diagnostico=diagnostico, centro=centro,
+                                                                semana=semana, cant_casos=cant)
+                                            paciente.save(force_insert=True)
+                                            # print("Paciente creado")
                                         except:
                                             pass
-                                            # print("error: the zone dont created correctly.")
-
-                                elif i == 1:
-                                    try:
-                                        codigo = int(celda)
+                                            print("nos se pudo crea al paciente")
                                     except:
                                         pass
-                                    if codigo not in centrosCod:
+                i+=1
 
-                                        try:
-
-                                            zona = Zona.objects.get(codigo=int(str(sheet["A" + str(num)].value)))
-
-                                            centro = Centro(codigo=int(celda), nombre=str(sheet["C" + str(num)].value),
-                                                            zona=zona)
-
-                                            centro.save(force_insert=True)
-                                            centrosCod.append(int(celda))
-                                            # print("centro creado")
-                                        except:
-                                            pass
-                                            # print("no anduvo")
-
-                                elif i == 3:
-                                    try:
-                                        codigo = str(celda)
-                                    except:
-                                        pass
-                                    if codigo not in diagnosticosCod and codigo != 'None':
-
-                                        try:
-
-                                            diagnostico = Diagnostico(codigo=str(celda),
-                                                                      nombre=str(sheet["E" + str(num)].value))
-
-                                            diagnostico.save(force_insert=True)
-                                            # print("diagnostico creado")
-                                            diagnosticosCod.append(str(celda))
-
-                                        except:
-                                            # print("no anduvo crear el diagnostico")
-                                            pass
-
-                                elif i == 5:
-                                    if str(sheet["E" + str(num)].value) != "TOTALES":
-                                        try:
-                                            diagnostico = Diagnostico.objects.get(
-                                                codigo=str(sheet["D" + str(num)].value))
-                                            # print("diagnostico obtained")
-                                        except:
-                                            print("error d")
-                                            diagnostico = None
-                                        try:
-                                            centro = Centro.objects.get(codigo=int(str(sheet["B" + str(num)].value)))
-                                            # print("centro obtained")
-                                        except:
-                                            print("error c")
-                                            centro = None
-
-                                        if centro != None and diagnostico != None:
-                                            for l in range(0, len(letras)):
-
-                                                celda2 = str(sheet[letras[l] + str(num)].value)
-
-                                                try:
-                                                    cant = int(celda2)
-
-                                                    # print("se encontro una cantidad")
-                                                    # print("cant " + str(cant))
-                                                    sexo = ""
-                                                    edad = ""
-                                                    if (l + 1) % 2 != 0:
-                                                        sexo = "M"
-                                                        edad = str(sheet[letras[l] + "1"].value)
-                                                    else:
-
-                                                        edad = str(sheet[letras[l - 1] + "1"].value)
-                                                        sexo = "F"
-
-                                                    edad = edad.strip(" años")
-                                                    edad = edad.strip(" año")
-
-                                                    # print("sexo " + sexo)
-                                                    # print("edad " + edad)
-                                                    try:
-                                                        paciente = Paciente(sexo=sexo, edad=edad,
-                                                                            diagnostico=diagnostico, centro=centro,
-                                                                            semana=semana,cant_casos=cant)
-                                                        paciente.save(force_insert=True)
-                                                        # print("Paciente creado")
-                                                    except:
-                                                        pass
-                                                        print("nos se pudo crea al paciente")
-                                                except:
-                                                    pass
-                                                    # print("No se encontro una cantidad")
-    except:
-        error = [1, "(File is not a zip file.),"]
-        errors.append(error)
+    error = [1, "(File is not a zip file.),"]
+    errors.append(error)
     return errors
 
 

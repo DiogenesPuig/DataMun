@@ -187,11 +187,12 @@ def uploadFileView(request):
             
             if len(success) != 1:
                 archivo = Archivo.objects.get(pk=archivo.id)
-                archivo.delete()
                 for error in success:
+                    print(error[1])
                     if error[0] == 1:
 
                         form._errors["tabla"] = ErrorList([u" El archivo subido debe ser excel."])
+
                     if error[0] == 2:
                     
                         form._errors["tabla"] = ErrorList([u" Revisa que el titulo de la hoja este correcto con su año y semana"])
@@ -199,6 +200,8 @@ def uploadFileView(request):
                     context = {
                         'form':form
                     }
+
+                archivo.delete()
 
                 
                 return render(request, 'uploadFile.html',context)
