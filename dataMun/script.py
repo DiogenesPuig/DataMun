@@ -70,32 +70,30 @@ def read_excel(archivo):
                     crearPacientes = False
 
             if crearPacientes:
-                
-                for row in sheet.iter_rows(values_only=True):
-                    if row[4] != "Totales":
-                        try:
-                            zona = int(row[0])
-                            cs = int(row[1])
-                            cname = str(row[2])
-                            cod = str(row[3])
-                            diag = str(row[4])
 
+                for row in sheet.iter_rows():
+                    if row[4].value != "Totales":
+                        try:
+                            zona = int(row[0].value)
+                            cs = int(row[1].value)
+                            cname = str(row[2].value)
+                            cod = str(row[3].value)
+                            diag = str(row[4].value)
                         except:
-                            pass
+                            print("error obteniendo datos")
                         if zona not in zonasCod:
                             nzona = Zona(codigo=zona)
                             nzona.save()
                             zonasCod.append(zona)
                         if cs not in centrosCod:
                             ozona = Zona.objects.get(codigo=zona)
-                            ncentro = Centro(codigo=cs,nombre=cname,zona=ozona)
+                            ncentro = Centro(codigo=cs, nombre=cname, zona=ozona)
                             ncentro.save()
                             centrosCod.append(cs)
                         if cod not in diagnosticosCod:
                             ndiagnostico = Diagnostico(codigo=cod, nombre=diag)
                             ndiagnostico.save()
                             diagnosticosCod.append(cod)
-
                         try:
                             ocentro = Centro.objects.get(codigo=cs)
                             odiagnostico = Diagnostico.objects.get(codigo=cod)
@@ -104,37 +102,34 @@ def read_excel(archivo):
                             ocentro = None
                             odiagnostico = None
 
-
+                        #me explicas?
                         if ocentro != None and odiagnostico != None:
-                            
-                            
-                            for i in (0,len(letras)-1):
-                                
-                                    
-                                sexo = ""
-                                edad = ""
-                                try:
-                                    cant = int(row[i+5])
-                                except:
-                                    cant = None 
-                                if cant != None:
-
-                                    if (i+1) % 2 != 0:
-                                        sexo = "M"
-                                        edad = str(sheet[letras[i] + "1"].value)
-                                    else:
-                                        sexo = "F"
-                                        edad = str(sheet[letras[i-1] + "1"].value)
-
-                                    edad = edad.strip(" años")
-                                    edad = edad.strip(" año")
-                                    #podria ser un try
+                            try:
+                                for i in (0, len(letras) - 1):
+                                    sexo = ""
+                                    edad = ""
                                     try:
-                                        npaciente = Paciente(sexo=sexo,edad=edad,cant_casos=cant,
-                                                        diagnostico=odiagnostico,centro=ocentro,semana=semana)
-                                        npaciente.save()
+                                        cant = int(row[i+5].value)
+                                        if (i + 1) % 2 != 0:
+                                            sexo = "M"
+                                            edad = str(sheet[letras[i] + "1"].value)
+                                        else:
+                                            sexo = "F"
+                                            edad = str(sheet[letras[i - 1] + "1"].value)
+
+                                        edad = edad.strip(" años")
+                                        edad = edad.strip(" año")
+
+                                        try:
+                                            npaciente = Paciente(sexo=sexo, edad=edad, cant_casos=cant, diagnostico=odiagnostico, centro=ocentro, semana=semana)
+                                            npaciente.save()
+                                            print(npaciente)
+                                        except:
+                                            print("Error creando paciente")
                                     except:
-                                        print("Error creando el paciente")
+                                        print("error cantidad")
+                            except:
+                                print("error en el for")
     except:
         error = [1, "(File is not a zip file.),"]
         errors.append(error)

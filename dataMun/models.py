@@ -58,7 +58,7 @@ class Paciente(models.Model):
     semana = models.ForeignKey(Semana,on_delete=models.CASCADE,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        str = 'sexo ' + self.sexo + ' edad ' + self.edad + ' diagnostico ' + self.diagnostico.__str__()
+        str = 'sexo ' + self.sexo + ' edad ' + self.edad + ' diagnostico ' + self.diagnostico.__str__() + 'cant_casos ' + self.cant_casos.__str__()
         return str
 
 
