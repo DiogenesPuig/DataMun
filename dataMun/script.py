@@ -214,12 +214,12 @@ def funcionGrafico1(pacientes, diagnostico, year ):
     
     pacientes = pacientes.filter(diagnostico=diagnostico)
 
-    medias = [0] *52
+    medias = [0] * 52
     desviacionesEstandar = [0] * 52
     cantidadesSemana = [0] * 52
     cantidadesCasos = [0] * 52
     
-    for i in range(len(medias)) :
+    for i in range(len(medias)):
         cantSemanas = 0
         cantidadCasos = 0 
         sumas = []
@@ -233,11 +233,7 @@ def funcionGrafico1(pacientes, diagnostico, year ):
                     cantidadCasos += p.cant_casos
                 sumas.append(cantidadCasos)
                 cantSemanas += 1
-                    
-                
-                
-        
-       
+
             
         if cantidadCasos != 0:
             cantidadesCasos[i] = cantidadCasos
@@ -260,12 +256,7 @@ def funcionGrafico1(pacientes, diagnostico, year ):
         cantidadCasos += media
 
     prom = cantidadCasos/len(medias)
-        
-        
-    
 
-
-    
 
     funcionesGrafico1 = []
     for i in range(len(desviacionesEstandar)):
@@ -280,3 +271,24 @@ def funcionGrafico1(pacientes, diagnostico, year ):
         funcionesGrafico1.append(funcion)
 
     return funcionesGrafico1
+
+def funcionGrafico2(pacientes, diagnostico, year):
+    #idk la verdad
+    semanas = Semana.objects.order_by("year").filter(year__lte=year - 1)
+    pacientes = pacientes.filter(diagnostico=diagnostico)
+
+    """
+    #C1 = 52*1 /4
+    #C2 = 52*2 /4
+    #C3 = 52*3 /4
+    canttotal = 0
+    cantidadCasos = 0
+    sumas = []
+
+    for semana in semanas:
+        pac = pacientes.filter(semana=semana)
+        for p in pac:
+            cantidadCasos += p.cant_casos
+        sumas.append(cantidadCasos)
+    """
+
