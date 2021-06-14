@@ -210,7 +210,7 @@ class FuncionGrafico1():
 
 
 def funcionGrafico1(pacientes, diagnostico, year ):
-    semanas = Semana.objects.order_by("year").filter(year__lte=year)
+    semanas = Semana.objects.order_by("year").filter(year__lte=year-1)
     
     pacientes = pacientes.filter(diagnostico=diagnostico)
 
