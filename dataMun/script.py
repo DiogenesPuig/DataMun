@@ -14,7 +14,12 @@ def read_excel(archivo):
     errors = ["None"]
     print(archivo.tabla)
 
-    codigo=0
+    zona = 0
+    cod=0
+    cs=0
+    cname=""
+    diag=""
+
     workbook = openpyxl.load_workbook(archivo.tabla)
     alphabe = alphabet()
     letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
@@ -65,95 +70,62 @@ def read_excel(archivo):
                 crearPacientes = False
 
         if crearPacientes:
-            i = 0
-            for row in sheet.iter_rows(values_only=True):
-                for cell in row:
-                    if i == 0:
-                        print("0")
+            try:
+                for row in sheet.iter_rows(values_only=True):
+                    if row[4] != "Totales":
                         try:
-                            codigo = int(cell)
+                            zona = int(row[0])
+                            cs = int(row[1])
+                            cname = str(row[2])
+                            cod = str(row[3])
+                            diag = str(row[4])
                         except:
                             pass
-                        if codigo not in zonasCod:
-                            try:
-                                zona = Zona(codigo=codigo)
-                                zona.save(force_insert=True)
-                                zonasCod.append(codigo)
-                            except:
-                                pass
-                    elif i == 1:
-                        print("1")
+                        if zona not in zonasCod:
+                            nzona = Zona(codigo=zona)
+                            nzona.save()
+                            zonasCod.append(zona)
+                        if cs not in centrosCod:
+                            ozona = Zona.objects.get(codigo=zona)
+                            ncentro = Centro(codigo=cs,nombre=cname,zona=ozona)
+                            ncentro.save()
+                            centrosCod.append(cs)
+                        if cod not in diagnosticosCod:
+                            ndiagnostico = Diagnostico(codigo=cod, nombre=diag)
+                            ndiagnostico.save()
+                            diagnosticosCod.append(cod)
                         try:
-                            codigo = int(cell)
+                            ocentro = Centro.objects.get(codigo=cs)
+                            odiagnostico = Diagnostico.objects.get(codigo=cod)
                         except:
-                            pass
-                        if codigo not in centrosCod:
+                            print("error de centro y diagnostico")
+                            ocentro = None
+                            odiagnostico = None
+
+                        if ocentro != None and odiagnostico != None:
                             try:
-                                zona = Zona.objects.get(codigo=int(str(row[1])))
-                                new_centro = Centro(codigo=codigo,nombre=row[2],zona=zona)
-                                new_centro.save(force_insert=True)
-                                centrosCod.append(int(cell))
+                                for i in (0,len(letras)-1):
+                                    sexo = ""
+                                    edad = ""
+                                    cant = 0
+
+                                    if (i+1) % 2 != 0:
+                                        sexo = "M"
+                                        edad = str(sheet[letras[i] + "1"].value)
+                                    else:
+                                        sexo = "F"
+                                        edad = str(sheet[letras[i-1] + "1"].value)
+
+                                    edad = edad.strip(" años")
+                                    edad = edad.strip(" año")
+                                    npaciente = Paciente(sexo=sexo,edad=edad,cant_casos=cant,
+                                                         diagnostico=odiagnostico,centro=ocentro,semana=semana)
+                                    npaciente.save()
                             except:
-                                pass
-                    elif i == 3:
-                        print("3")
-                        try:
-                            codigo = str(cell)
-                        except:
-                            pass
-                        if codigo not in diagnosticosCod and codigo != 'None':
-                            try:
-                                new_diagnostico = Diagnostico(codigo=codigo,nombre=str(row[4]))
-                                new_diagnostico.save(force_insert=True)
-                                diagnosticosCod.append(str(cell))
-                            except:
-                                pass
-                    elif i == 5:
-                        print("5")
-                        if row[4] != "TOTALES":
-                            try:
-                                diagnostico = Diagnostico.objects.get(codigo=row[3])
-                            except:
-                                diagnostico = None
-                            try:
-                                centro = Centro.objects.get(codigo=row[1])
-                            except:
-                                centro = None
-                            if centro != None and diagnostico != None:
-                                for l in range(0, len(letras)):
-                                    try:
-                                        cant = int(cell)
-
-                                        sexo = ""
-                                        edad = ""
-                                        if (l + 1) % 2 != 0:
-                                            sexo = "M"
-                                            edad = str(sheet[letras[l] + "1"].value)
-                                        else:
-
-                                            edad = str(sheet[letras[l - 1] + "1"].value)
-                                            sexo = "F"
-
-                                        edad = edad.strip(" años")
-                                        edad = edad.strip(" año")
-
-                                        # print("sexo " + sexo)
-                                        # print("edad " + edad)
-                                        try:
-                                            paciente = Paciente(sexo=sexo, edad=edad,
-                                                                diagnostico=diagnostico, centro=centro,
-                                                                semana=semana, cant_casos=cant)
-                                            paciente.save(force_insert=True)
-                                            # print("Paciente creado")
-                                        except:
-                                            pass
-                                            print("nos se pudo crea al paciente")
-                                    except:
-                                        pass
-                i+=1
-
-    error = [1, "(File is not a zip file.),"]
-    errors.append(error)
+                                print("Error creando el paciente")
+            except:
+                error = [1, "(File is not a zip file.),"]
+                errors.append(error)
     return errors
 
 

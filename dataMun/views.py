@@ -184,9 +184,11 @@ def uploadFileView(request):
             success = read_excel(archivo)
             
             
-            
             if len(success) != 1:
                 archivo = Archivo.objects.get(pk=archivo.id)
+                #archivo.delete()
+
+
                 for error in success:
                     print(error[1])
                     if error[0] == 1:
@@ -200,11 +202,8 @@ def uploadFileView(request):
                     context = {
                         'form':form
                     }
-
-                archivo.delete()
-
-                
                 return render(request, 'uploadFile.html',context)
+
             messages.success(request, "El archivo " + str(archivo.tabla) + ' fue agregado')
             return redirect('home') ## redirects to aliquot page ordered by the most recent
         
