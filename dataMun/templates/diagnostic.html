@@ -22,11 +22,29 @@ Home
             </div>
             <div class="row center" >
                 <div class="col s12 m5 l5">
+                    <div class="row" >
+
+
+                        <div class="col s12">
+                            <ul class="tabs">
+                                <li class="tab col s3"><a class="active" href="#test1">Medias</a></li>
+                                <li class="tab col s3"><a href="#test2">Cuartiles</a></li>
+                                
+                            </ul>
+                        </div>
+                        <div id="test1" class="col s12"><canvas id="medias" ></canvas></div>
+                        <div id="test2" class="col s12"><canvas id="cuartiles" ></canvas></div>
+                        
+                
                     
+        
+
+
                    
-                    <canvas id="myChart" ></canvas>
+                    
+                    
                     <script>
-                    var ctx = document.getElementById('myChart').getContext('2d');
+                    var ctx = document.getElementById('medias').getContext('2d');
                     const labels = [{% for i in medias %}{{i.semana}},{% endfor %}]
                     const data = {
                     labels: labels,
@@ -39,18 +57,18 @@ Home
                     {
                         label: 'Peligro',
                         data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
-                        
-                        
-                        borderColor: 'rgba(255,0,0,0.8)',
+                        fill: {target: '+1'},
+                        backgroundColor: 'rgba(212, 0, 0,0.4)',
+                        borderColor: 'rgb(212, 70, 0)',
                         
                         tension: 0.1
                     },
                     {
                         label: 'media',
                         data: [{% for i in medias %}{{i.media}},{% endfor %}],
-                        fill: {target: '1'},
-                        backgroundColor: 'rgba(255, 28, 64, 0.4)',
-                        borderColor: 'rgba(255,255,0,0.8)',
+                        fill: {target: '+1'},
+                        backgroundColor: 'rgba(255, 187, 0,0.4)',
+                        borderColor: 'rgb(211, 155, 0)',
                         
                         
                         tension: 0.1
@@ -58,8 +76,8 @@ Home
                     {
                         label: 'objetivo',
                         data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
-                        fill: {target: '2' },
-                        backgroundColor: 'rgba(203, 148, 85, 0.4)',
+                        fill: {target: 'start' },
+                        backgroundColor: 'rgba(161, 255, 194,0.4)',
                         borderColor: 'rgba(0,255,0,0.8)',
                         
                         tension: 0.1
@@ -85,13 +103,80 @@ Home
                         }   
                     };
                     var myChart = new Chart(ctx,config)
+
+
+                    var ctx2 = document.getElementById('cuartiles').getContext('2d');
+                    const labels2 = [{% for i in medias %}{{i.semana}},{% endfor %}]
+                    const data2 = {
+                    labels: labels2,
+                    datasets: [{
+                        label: 'Casos',
+                        data: [{% for i in cuartiles %}{{i.casos}},{% endfor %}],
+                        borderColor: 'rgba(0,0,0,0.8)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Cuartil 3',
+                        data: [{% for i in cuartiles %}{{i.c3}},{% endfor %}],
+                        fill: {target: '+1'},
+                        
+                        borderColor: 'rgba(255,0,0,0.8)',
+                        
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Cuartil 2',
+                        data: [{% for i in cuartiles %}{{i.c2}},{% endfor %}],
+                        fill: {target: '+1'},
+                        backgroundColor: 'rgba(255, 28, 64, 0.4)',
+                        borderColor: 'rgba(255,255,0,0.8)',
+                        
+                        
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Cuartil 1',
+                        data: [{% for i in cuartiles %}{{i.c1}},{% endfor %}],
+                        fill: {target: 'start' },
+                        backgroundColor: 'rgba(203, 148, 85, 0.4)',
+                        borderColor: 'rgba(0,255,0,0.8)',
+                        
+                        tension: 0.1
+                    }]
+                    };
+                    const config2 = {
+                        type: 'line',
+                        data: data2,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    display: true,
+                                    title: 'semanas'
+                                },
+                                y: {
+                                    display: true,
+                                    title: 'casos'
+                                    
+                                }
+                            }
+                        }   
+                    };
+                    var myChart2 = new Chart(ctx2,config2)
+
+
+                        
                     </script>
-                
+                    
+                        
+                    </div>
                     
                 </div>
                 <div class="col s12 m1 l1">
-                     <form method="get">
-                        {{ filter.form.as_p }}
+                    <form method="get">
+                        {{ filterP.form.as_p }}
+                        {{ filterS.form.as_p }}
                         
                         <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Filtrar
                     
@@ -99,6 +184,7 @@ Home
                         </button>
                     </form>
                 </div>
+                
             </div>
 
             

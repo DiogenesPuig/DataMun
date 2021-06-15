@@ -209,8 +209,8 @@ class FuncionGrafico1():
         return "media: " + str(self.media) + " year: " + str(self.year)
 
 
-def funcionGrafico1(pacientes, diagnostico, year ):
-    semanas = Semana.objects.order_by("year").filter(year__lte=year-1)
+def funcionGrafico1(pacientes, diagnostico, semanas ):
+    
     
     pacientes = pacientes.filter(diagnostico=diagnostico)
 
@@ -272,23 +272,79 @@ def funcionGrafico1(pacientes, diagnostico, year ):
 
     return funcionesGrafico1
 
-def funcionGrafico2(pacientes, diagnostico, year):
+
+class PuntoGrafico2():
+    def __init__(self,c1,c2,c3,casos,semana):
+        self.c1 = c1
+        self.c2 = c2
+        self.c3 = c3
+        self.casos = casos
+        self.semana  = semana
+def funcionGrafico2(pacientes, diagnostico, semanas,year, cantYear):
     #idk la verdad
-    semanas = Semana.objects.order_by("year").filter(year__lte=year - 1)
+    semanas = semanas.order_by("year")
+
     pacientes = pacientes.filter(diagnostico=diagnostico)
+    suma = 0
+    if cantYear % 2 != 0:
+        suma = -1
+    c = [(cantYear+suma)*1 / 4,(cantYear+suma)*2 / 4,(cantYear+suma)*3 / 4]
 
-    """
-    #C1 = 52*1 /4
-    #C2 = 52*2 /4
-    #C3 = 52*3 /4
-    canttotal = 0
-    cantidadCasos = 0
-    sumas = []
+    
+    
+    
+    puntosGrafico2 = [ ]
+    cantidadesCasos = [0] * 52
+    for o in range(52):
+        puntos=[]
+        cantidadesCasos = [0.0] * (cantYear)
+        for i in range(len(cantidadesCasos)):
 
-    for semana in semanas:
-        pac = pacientes.filter(semana=semana)
-        for p in pac:
-            cantidadCasos += p.cant_casos
-        sumas.append(cantidadCasos)
-    """
+            cantidadCasos = 0 
+            
+            
+            for semana in semanas:
+                
+                if semana.year == year-(i+1):
+                    if semana.semana ==  o+1:
+                        pac = pacientes.filter(semana=semana)
+                        
+                        for p in pac:
+                            
+                            cantidadCasos += p.cant_casos
+            if cantidadCasos != 0:
+                cantidadesCasos[i] = float(cantidadCasos)
+                
+        
+        n = len(  cantidadesCasos )
+        for j in range(n-1): # range(n) also work but outer loop will repeat one time more than 
+            for j in range(0, n-i-1):
+                if cantidadesCasos[j] >  cantidadesCasos[j + 1] :
+                    
+                    l = cantidadesCasos[j]
+                    cantidadesCasos[j] = cantidadesCasos[j + 1]
+                    cantidadesCasos[j + 1] = l 
+        
+        for r in range(len(c)):
 
+
+            puntos.append(cantidadesCasos[int(c[r])])
+        
+    
+        cantidadCasosPerSemana = 0 
+        
+        
+        for semana in semanas:
+            if semana.semana == o+1:
+                pac = pacientes.filter(semana=semana)
+                
+                for p in pac:
+                    
+                    cantidadCasosPerSemana += p.cant_casos
+       
+        
+        punto = PuntoGrafico2(puntos[0],puntos[1],puntos[2],cantidadCasosPerSemana,o+1)
+        puntosGrafico2.append(punto)
+
+    return puntosGrafico2
+    

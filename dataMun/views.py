@@ -163,14 +163,29 @@ def homeView(request):
 
 @login_required()
 def diagnosticView(request,codigo_diagnostic):
+    
+
     diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
     pacientes = Paciente.objects.all()
-    f = PacienteFilter(request.GET, queryset=pacientes)
-    medias = funcionGrafico1(f.qs,diagnostico,2021)
+   
+    semanas =  Semana.objects.all()
+    p = PacienteFilter(request.GET, queryset=pacientes)
+    s = SemanaFilter(request.GET, queryset=semanas)
+    try:
+        year = int(request.GET.get('year__lt'))
+    except:
+        year = 0
+    if year == 0:
+        year = 2021
+    
+    medias = funcionGrafico1(p.qs,diagnostico,s.qs)
+    cuartiles = funcionGrafico2(p.qs,diagnostico,s.qs,year,2)
     context = {
         'medias':medias,
+        'cuartiles':cuartiles,
         'diagnostico':diagnostico,
-        'filter': f
+        'filterP': p,
+        'filterS': s,
     }
     return render(request, 'diagnostic.html',context)
 
