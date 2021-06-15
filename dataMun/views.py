@@ -8,15 +8,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
-import openpyxl
 from .script import *
-import string
 from .filters import *
 
 from django.forms.utils import ErrorList
 import datetime
-import threading
-
 
 # Create your views here.
 

@@ -4,8 +4,19 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="{% static 'css-m/materialize.min.css' %}">
+    <script type="text/javascript" src="{% static 'js-m/materialize.min.js' %}"></script>
     <link rel="shortcut icon" type="image/png" href="{% static 'media/icon.png' %}">
+
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+
+    <script type="text/javascript"  src="{% static 'js/index.js' %}"></script>
+    <script type="text/javascript"  src="{% static 'js/map.js' %}"></script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <title>{% block title %}{% endblock %}</title>
     <!--Let browser know website is optimized for mobile-->
@@ -21,7 +32,7 @@
             flex: 1 0 auto;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 </head>
 <body>
 
@@ -79,44 +90,6 @@
 
     </ul>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var elems = document.querySelectorAll('.fixed-action-btn');
-        var instances = M.FloatingActionButton.init(elems, {
-            direction: 'top',
-            hoverEnabled: true
-        });
-
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        var elems = document.querySelectorAll('.parallax');
-        var instances = M.Parallax.init(elems,);
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        var elems = document.querySelectorAll('.tabs');
-        var instances = M.Tabs.init(elems,);
-    });
-
-     
-    document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('select');
-        var instances = M.FormSelect.init(elems);
-      });
-</script>
-
-
-
-<script type="text/javascript" src="{% static 'js-m/materialize.min.js' %}"></script>
-<script> 
-document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.modal');
-    var instances = M.Modal.init(elems,);
-  });
-</script>
-<script>document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.timepicker');
-    var instances = M.Timepicker.init(elems,);
-  });</script>
 
 
 </html>
