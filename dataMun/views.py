@@ -5,7 +5,7 @@ from .forms import *
 from .decorators import *
 from .models import *
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 import openpyxl
@@ -76,6 +76,16 @@ def registerView(request):
 
 
 
+def homeView(request):
+    
+    context = {
+        
+    }
+    return render(request, 'home.html',)
+
+
+
+
 
 
 class PaceintePorDiagnostico():
@@ -83,8 +93,8 @@ class PaceintePorDiagnostico():
         self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
         self.diagnostico = diagnostico
 
-@login_required()
-def homeView(request):
+@user_passes_test(lambda u:u.is_staff)
+def diagnosticosView(request):
 
     
     try:
@@ -158,10 +168,10 @@ def homeView(request):
     except:
         pass
         context = {}
-    return render(request, 'home.html',context)
+    return render(request, 'diagnosticos.html',context)
 
 
-@login_required()
+@user_passes_test(lambda u:u.is_staff)
 def diagnosticView(request,codigo_diagnostic):
     
 
@@ -192,7 +202,7 @@ def diagnosticView(request,codigo_diagnostic):
 
 
 
-@login_required()
+@user_passes_test(lambda u:u.is_staff)
 def uploadFileView(request):
     form = CreateArchivoForm()
     if request.method == "POST": # If the form has been submitted...
@@ -225,7 +235,7 @@ def uploadFileView(request):
                 
                 return render(request, 'uploadFile.html',context)
             messages.success(request, "El archivo " + str(archivo.tabla) + ' fue agregado')
-            return redirect('home') ## redirects to aliquot page ordered by the most recent
+            return redirect('diagnosticos') ## redirects to aliquot page ordered by the most recent
         
         
 
