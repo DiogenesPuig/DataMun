@@ -4,347 +4,405 @@ import openpyxl
 import string
 from .models import *
 import math
-import random
+
+
 
 def alphabet():
     return list(string.ascii_lowercase)
 
 
-def read_excel(archivo):
+def read_excel(spread_sheet):
     errors = ["None"]
-    print(archivo.tabla)
+    print(spread_sheet.file)
 
-    try:
+    
 
-        workbook = openpyxl.load_workbook(archivo.tabla)
-        alphabe = alphabet()
-        letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
-        centros = Centro.objects.all()
-        centrosCod = []
-        for i in centros:
-            centrosCod.append(i.codigo)
+    workbook = openpyxl.load_workbook(spread_sheet.file)
+    alphabe = alphabet()
+    letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
+    centers = Center.objects.all()
+    centers_cods = []
+    for i in centers:
+        centers_cods.append(i.code)
 
-        diagnosticos = Diagnostico.objects.all()
-        diagnosticosCod = []
-        for i in diagnosticos:
-            diagnosticosCod.append(i.codigo)
+    diagnostics = Diagnostic.objects.all()
+    diagnostics_cods = []
+    for i in diagnostics:
+        diagnostics_cods.append(i.code)
 
-        zonas = Zona.objects.all()
-        zonasCod = []
-        for i in zonas:
-            zonasCod.append(i.codigo)
+    zones = Zone.objects.all()
+    zones_cods = []
+    for i in zones:
+        zones_cods.append(i.code)
 
-        for sheet in workbook.worksheets:
-            print("Saving week: " + sheet.title)
+    for sheet in workbook.worksheets:
+        print("Saving week: " + sheet.title)
+        crearPacientes = False
+        try:
+            year = (sheet.title).split(' ')[0]
+            week = (sheet.title).split(' ')[1]
+            week = Week.objects.get(year=year, week=week)
+
             crearPacientes = False
+            # print("zone obtained")
+        except:
+            week = None
+
+        if week == None:
             try:
                 year = (sheet.title).split(' ')[0]
-                semana = (sheet.title).split(' ')[1]
-                semana = Semana.objects.get(year=year, semana=semana)
+                week = (sheet.title).split(' ')[1]
+                week = Week(year=year, week=week,spread_sheet=spread_sheet)
+
+                week.save(force_insert=True)
+                week = (sheet.title).split(' ')[1]
+                week = Week.objects.get(year=year, week=week)
+                print("week added")
+                crearPacientes = True
+            except:
+                print("error: week dont added correctly.")
+                error = [2, "(week dont added correctly.),"]
+                errors.append(error)
 
                 crearPacientes = False
-                # print("zona obtained")
-            except:
-                semana = None
 
-            if semana == None:
-                try:
-                    year = (sheet.title).split(' ')[0]
-                    semana = (sheet.title).split(' ')[1]
-                    semana = Semana(year=year, semana=semana, archivo=archivo)
+        if crearPacientes:
 
-                    semana.save(force_insert=True)
-                    semana = (sheet.title).split(' ')[1]
-                    semana = Semana.objects.get(year=year, semana=semana)
-                    print("week added")
-                    crearPacientes = True
-                except:
-                    print("error: week dont added correctly.")
-                    error = [2, "(week dont added correctly.),"]
-                    errors.append(error)
+            for i in range(0, 6):
+                if i != 2 and i != 4:
+                    print(alphabe[i])
+                    for num in range(1, sheet.max_row):
+                        if num != 1 and num != 2:
+                            cell = str(sheet[alphabe[i] + str(num)].value)
 
-                    crearPacientes = False
-
-            if crearPacientes:
-
-                for i in range(0, 6):
-                    if i != 2 and i != 4:
-                        print(alphabe[i])
-                        for num in range(1, sheet.max_row):
-                            if num != 1 and num != 2:
-                                celda = str(sheet[alphabe[i] + str(num)].value)
-                                """
+                            if i == 0:
                                 try:
-                                    print("celda: " +alphabet()[i] + str(num) + " value: " + str(celda))
+                                    code = int(cell)
                                 except:
-                                    print("celda: " +alphabet()[i] + str(num) + " value: none" )"""
-
-                                if i == 0:
+                                    pass
+                                if code not in zones_cods:
                                     try:
-                                        codigo = int(celda)
+                                        zone = Zone(code=int(cell))
+
+                                        zone.save(force_insert=True)
+                                        zones_cods.append(int(cell))
+                                        # print("zone added")
                                     except:
                                         pass
-                                    if codigo not in zonasCod:
-                                        try:
-                                            zona = Zona(codigo=int(celda))
 
-                                            zona.save(force_insert=True)
-                                            zonasCod.append(int(celda))
-                                            # print("zona added")
-                                        except:
-                                            pass
-                                            # print("error: the zone dont created correctly.")
-
-                                elif i == 1:
+                            elif i == 1:
+                                try:
+                                    code = int(cell)
+                                except:
+                                    pass
+                                if code not in centers_cods:
                                     try:
-                                        codigo = int(celda)
+                                        zone = Zone.objects.get(code=int(str(sheet["A" + str(num)].value)))
+                                        center = Center(code=int(cell), name=str(sheet["C" + str(num)].value),zone=zone)
+                                        center.save(force_insert=True)
+                                        centers_cods.append(int(cell))
+                                        # print("Center creado")
                                     except:
                                         pass
-                                    if codigo not in centrosCod:
 
-                                        try:
-
-                                            zona = Zona.objects.get(codigo=int(str(sheet["A" + str(num)].value)))
-
-                                            centro = Centro(codigo=int(celda), nombre=str(sheet["C" + str(num)].value),
-                                                            zona=zona)
-
-                                            centro.save(force_insert=True)
-                                            centrosCod.append(int(celda))
-                                            # print("centro creado")
-                                        except:
-                                            pass
-                                            # print("no anduvo")
-
-                                elif i == 3:
+                            elif i == 3:
+                                try:
+                                    code = str(cell)
+                                except:
+                                    pass
+                                if code not in diagnostics_cods and code != 'None':
                                     try:
-                                        codigo = str(celda)
+                                        diagnostic = Diagnostic(code=str(cell),name=str(sheet["E" + str(num)].value))
+                                        diagnostic.save(force_insert=True)
+                                        diagnostics_cods.append(str(cell))
+                                        # print("Diagnostic creado")
                                     except:
                                         pass
-                                    if codigo not in diagnosticosCod and codigo != 'None':
 
-                                        try:
+                            elif i == 5:
+                                if str(sheet["E" + str(num)].value) != "TOTALES":
+                                    try:
+                                        diagnostic = Diagnostic.objects.get(code=str(sheet["D" + str(num)].value))
+                                        # print("Diagnostic obtained")
+                                    except:
+                                        print("error d")
+                                        diagnostic = None
+                                    try:
+                                        center = Center.objects.get(code=int(str(sheet["B" + str(num)].value)))
+                                        # print("Center obtained")
+                                    except:
+                                        print("error c")
+                                        center = None
 
-                                            diagnostico = Diagnostico(codigo=str(celda),
-                                                                      nombre=str(sheet["E" + str(num)].value))
-
-                                            diagnostico.save(force_insert=True)
-                                            # print("diagnostico creado")
-                                            diagnosticosCod.append(str(celda))
-
-                                        except:
-                                            # print("no anduvo crear el diagnostico")
-                                            pass
-
-                                elif i == 5:
-                                    if str(sheet["E" + str(num)].value) != "TOTALES":
-                                        try:
-                                            diagnostico = Diagnostico.objects.get(
-                                                codigo=str(sheet["D" + str(num)].value))
-                                            # print("diagnostico obtained")
-                                        except:
-                                            print("error d")
-                                            diagnostico = None
-                                        try:
-                                            centro = Centro.objects.get(codigo=int(str(sheet["B" + str(num)].value)))
-                                            # print("centro obtained")
-                                        except:
-                                            print("error c")
-                                            centro = None
-
-                                        if centro != None and diagnostico != None:
-                                            for l in range(0, len(letras)):
-
-                                                celda2 = str(sheet[letras[l] + str(num)].value)
-
+                                    if center != None and diagnostic != None:
+                                        for l in range(0, len(letras)):
+                                            cell2 = str(sheet[letras[l] + str(num)].value)
+                                            try:
+                                                cases = int(cell2)
+                                                sex = ""
+                                                age = ""
+                                                if (l + 1) % 2 != 0:
+                                                    sex = "M"
+                                                    age = str(sheet[letras[l] + "1"].value)
+                                                else:
+                                                    age = str(sheet[letras[l - 1] + "1"].value)
+                                                    sex = "F"
+                                                age = age.strip(" años")
+                                                age = age.strip(" año")
+                                                #cases = random.randint(1, cases*2)
                                                 try:
-                                                    cant = int(celda2)
-
-                                                    # print("se encontro una cantidad")
-                                                    # print("cant " + str(cant))
-                                                    sexo = ""
-                                                    edad = ""
-                                                    if (l + 1) % 2 != 0:
-                                                        sexo = "M"
-                                                        edad = str(sheet[letras[l] + "1"].value)
-                                                    else:
-
-                                                        edad = str(sheet[letras[l - 1] + "1"].value)
-                                                        sexo = "F"
-
-                                                    edad = edad.strip(" años")
-                                                    edad = edad.strip(" año")
-                                                    
-                                                    cant = random.randint(1, cant*2)
-                                                    
-                                                    # print("sexo " + sexo)
-                                                    # print("edad " + edad)
-                                                    try:
-                                                        paciente = Paciente(sexo=sexo, edad=edad,
-                                                                            diagnostico=diagnostico, centro=centro,
-                                                                            semana=semana,cant_casos=cant)
-                                                        paciente.save(force_insert=True)
-                                                        # print("Paciente creado")
-                                                    except:
-                                                        pass
-                                                        print("nos se pudo crea al paciente")
+                                                    diagnosticCases = DiagnosticCases(sex=sex, age=age,
+                                                                        diagnostic=diagnostic, center=center,
+                                                                        week=week,cases=cases)
+                                                    diagnosticCases.save(force_insert=True)
+                                                    # print("diagnosticCases creado")
                                                 except:
                                                     pass
-                                                    # print("No se encontro una cantidad")
-    except:
-        error = [1, "(File is not a zip file.),"]
-        errors.append(error)
+                                            except:
+                                                pass
+                                                # print("No se encontro una casesidad")
+                                            
+    #except:
+    error = [1, "(File is not a zip file.),"]
+    errors.append(error)
     return errors
 
 
-class FuncionGrafico1():
-    def __init__(self, media, semana, rangoInferior, rangoSuperior,cant_casos):
-        self.media = media
-        self.semana = semana
-        self.rangoInferior = rangoInferior
-        self.rangoSuperior = rangoSuperior
-        self.cant_casos = cant_casos
-
-    def __str__(self):
-        return "media: " + str(self.media) + " year: " + str(self.year)
+class DotsGraphicAverage():
+    def __init__(self, average, week, lower_rank, top_rank,cases):
+        self.average = average
+        self.week = week
+        self.lower_rank = lower_rank
+        self.top_rank = top_rank
+        self.cases = cases
 
 
-def funcionGrafico1(pacientes, diagnostico, semanas ):
+
+def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year):
     
     
-    pacientes = pacientes.filter(diagnostico=diagnostico)
-
-    medias = [0] * 52
-    desviacionesEstandar = [0] * 52
-    cantidadesSemana = [0] * 52
-    cantidadesCasos = [0] * 52
+    weeks = weeks.filter(year__lt=year)
+    curent_year = year
+    #cases per diagnostic
     
-    for i in range(len(medias)):
-        cantSemanas = 0
-        cantidadCasos = 0 
-        sumas = []
+    diagnostic_cases = diagnostic_cases.filter(diagnostic=diagnostic)
+
+    #arithmetic average of the weeks / n_years
+    averages = [0] * 52
+
+    standard_deviations = [0] * 52
+    #number of years
+    n_years = 0
+    #cases per week of the diferent years
+    cases_per_weeks = [0] * 52
+    
+    for i in range(len(averages)):
+        cases = 0 
         
-        for semana in semanas:
-            if semana.semana == i+1:
-                pac = pacientes.filter(semana=semana)
-                
+        f = []
+        year = 0
+        n_years = 0
+        suma2 = 0
+        for week in weeks:
+            if week.week == i+1:
+                pac = diagnostic_cases.filter(week=week)
+                cases
                 for p in pac:
                     
-                    cantidadCasos += p.cant_casos
-                sumas.append(cantidadCasos)
-                cantSemanas += 1
-
-            
-        if cantidadCasos != 0:
-            cantidadesCasos[i] = cantidadCasos
-            media = cantidadCasos / cantSemanas
-            
-            medias[i] = media
-            desviacionEstandar = 0 
-            if len(sumas) != 1:
-                suma2 = 0 
-                for cantidadCasos in sumas:
-                    suma2 += (cantidadCasos-media)**2
-                desviacionEstandar = math.sqrt(suma2 / len(sumas))
+                    cases += p.cases
+                    
+                f.append(cases)
                 
-            desviacionesEstandar[i] = desviacionEstandar
+            if week.year != year:
+                n_years += 1
+                year = week.year
+        
+            
 
-            cantidadesSemana[i] = cantSemanas
-
-    cantidadCasos =  0
-    for media in medias:
-        cantidadCasos += media
-
-    prom = cantidadCasos/len(medias)
-
-
-    funcionesGrafico1 = []
-    for i in range(len(desviacionesEstandar)):
-        rangoInferior = 0
-        rangoSuperior = 0
-        if cantidadesSemana[i] !=0:
-            rangoInferior = medias[i] - (3.18 * desviacionesEstandar[i] / math.sqrt(cantidadesSemana[i]))
-            rangoSuperior = medias[i] + (3.18 * desviacionesEstandar[i] / math.sqrt(cantidadesSemana[i]))
+            
+        if cases != 0:
+            
+            average = cases / n_years
+            
+            averages[i] = average
+            #calculation of standar deviation
+            standard_deviation = 0 
+            if len(f) != 0:
+                for cases in f:
+                    suma2 += (cases-average)**2
+                
+                standard_deviation = math.sqrt(suma2 / len(f))
+                standard_deviations[i] = standard_deviation
+            
+            
+                
+                
+                
+            
+        weeks_qs = Week.objects.filter(week=(i+1),year=curent_year)
+        cases = 0
+        for week in weeks_qs:
+            
+            dia = diagnostic_cases.filter(week=week)
+            
+            for d in dia:
+                #print(d.cases)
+                
+                cases += d.cases
+        cases_per_weeks[i] = cases
+    
+    #array of class dots for draw the chart
+    dots_graphic_averages = []
+    for i in range(len(standard_deviations)):
+        lower_rank = 0
+        top_rank = 0
+        if n_years != 0:
+            lower_rank = averages[i] - (3.18 * standard_deviations[i] / math.sqrt(n_years))
+            top_rank = averages[i] + (3.18 * standard_deviations[i] / math.sqrt(n_years))
         
 
-        funcion = FuncionGrafico1(medias[i],i+1, rangoInferior, rangoSuperior,cantidadesCasos[i])
-        funcionesGrafico1.append(funcion)
+        dots = DotsGraphicAverage(averages[i],i+1, lower_rank, top_rank,cases_per_weeks[i])
+        dots_graphic_averages.append(dots)
+    
+   
 
-    return funcionesGrafico1
+
+    return dots_graphic_averages
 
 
-class PuntoGrafico2():
-    def __init__(self,c1,c2,c3,casos,semana):
-        self.c1 = c1
-        self.c2 = c2
-        self.c3 = c3
-        self.casos = casos
-        self.semana  = semana
-def funcionGrafico2(pacientes, diagnostico, semanas,year, cantYear):
+def GetAlert(diagnostic_cases, diagnostic, week,year):
+    
+    
+    #cases per diagnostic
+    
+    diag_cases = diagnostic_cases.filter(diagnostic=diagnostic)
+    average = 0
+    standard_deviation = 0 
+    cases = 0 
+    #number of years
+    n_years = 0
+    year_var = 0
+    f = []
+    weeks = Week.objects.filter(year__lt=year,week=week.week).order_by('year')
+    for w in weeks:
+
+        
+        if year_var != w.year:
+            n_years += 1
+            year_var = w.year
+
+        
+        pac = diag_cases.filter(week=w)
+        x = 0
+        for p in pac:
+            
+            cases += p.cases
+            x = p.cases
+            f.append(x)
+
+    if cases != 0:
+        
+        average = cases / n_years
+
+        #calculation of standar deviation  
+        if len(f) != 1:
+            suma2 = 0 
+            for cases in f:
+                suma2 += (cases-average)**2
+            standard_deviation = math.sqrt(suma2 / len(f))
+    cases = 0  
+    dia = diag_cases.filter(week=week)
+    
+    for d in dia:
+        #print(d.cases)
+        
+        cases += d.cases
+
+    #array of class dots for draw the chart
+
+    lower_rank = 0
+    top_rank = 0
+    if n_years != 0:
+        lower_rank = average - (3.18 * standard_deviation / math.sqrt(n_years))
+        top_rank = average + (3.18 * standard_deviation / math.sqrt(n_years))
+
+    dots = DotsGraphicAverage(average,week.week, lower_rank, top_rank,cases)
+        
+    return dots
+
+
+class DotsGraphicQuartile():
+    def __init__(self,q1,q2,q3,cases,week):
+        self.q1 = q1
+        self.q2 = q2
+        self.q3 = q3
+        self.cases = cases
+        self.week  = week
+
+def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     #idk la verdad
-    semanas = semanas.order_by("year")
+    weeks = weeks.filter(year__lte=year-1)
+    current_year = year
+    
 
-    pacientes = pacientes.filter(diagnostico=diagnostico)
     suma = 0
-    if cantYear % 2 != 0:
+    if n_years % 2 != 0:
         suma = -1
-    c = [(cantYear+suma)*1 / 4,(cantYear+suma)*2 / 4,(cantYear+suma)*3 / 4]
+    q = [(n_years+suma)*1 / 4,(n_years+suma)*2 / 4,(n_years+suma)*3 / 4]
 
     
+    diagnost_cases = diagnostic_cases.filter(diagnostic=diagnostic)
     
-    
-    puntosGrafico2 = [ ]
-    cantidadesCasos = [0] * 52
+    dots_graphic_quartiles = [ ]
     for o in range(52):
-        puntos=[]
-        cantidadesCasos = [0.0] * (cantYear)
-        for i in range(len(cantidadesCasos)):
+        dots_q=[]
+        
+        cases_per_years = [0.0] * (n_years)
+        for i in range(len(cases_per_years)):
 
-            cantidadCasos = 0 
+            cases = 0 
             
-            
-            for semana in semanas:
+            weeks_qs = weeks.filter(year=year-(i+1),week=o+1)
+            for week in weeks_qs:
                 
-                if semana.year == year-(i+1):
-                    if semana.semana ==  o+1:
-                        pac = pacientes.filter(semana=semana)
-                        
-                        for p in pac:
-                            
-                            cantidadCasos += p.cant_casos
-            if cantidadCasos != 0:
-                cantidadesCasos[i] = float(cantidadCasos)
+
+                dia = diagnostic_cases.filter(week=week)
+                
+                for d in dia:
+                    cases += d.cases
+
+            if cases != 0:
+                cases_per_years[i] = float(cases)
                 
         
-        n = len(  cantidadesCasos )
-        for j in range(n-1): # range(n) also work but outer loop will repeat one time more than 
+        n = len(  cases_per_years )
+        for i in range(n-1): # range(n) also work but outer loop will repeat one time more than 
             for j in range(0, n-i-1):
-                if cantidadesCasos[j] >  cantidadesCasos[j + 1] :
+                if cases_per_years[j] <  cases_per_years[j + 1] :
                     
-                    l = cantidadesCasos[j]
-                    cantidadesCasos[j] = cantidadesCasos[j + 1]
-                    cantidadesCasos[j + 1] = l 
+                    l = cases_per_years[j]
+                    cases_per_years[j] = cases_per_years[j + 1]
+                    cases_per_years[j + 1] = l 
         
-        for r in range(len(c)):
-
-
-            puntos.append(cantidadesCasos[int(c[r])])
-        
-    
-        cantidadCasosPerSemana = 0 
+        for r in range(len(q)):
+            
+            dots_q.append(cases_per_years[int(q[r])])
         
         
-        for semana in semanas:
-            if semana.semana == o+1:
-                pac = pacientes.filter(semana=semana)
+        cases_per_week = 0 
+        
+        weeks_qs = Week.objects.filter(week=(o+1),year=current_year)
+        for week in weeks_qs:
+            
+            dia = diagnost_cases.filter(week=week)
+            
+            for d in dia:
                 
-                for p in pac:
-                    
-                    cantidadCasosPerSemana += p.cant_casos
+                cases_per_week += d.cases
        
         
-        punto = PuntoGrafico2(puntos[0],puntos[1],puntos[2],cantidadCasosPerSemana,o+1)
-        puntosGrafico2.append(punto)
+        dots = DotsGraphicQuartile(dots_q[0],dots_q[1],dots_q[2],cases_per_week,o+1)
+        dots_graphic_quartiles.append(dots)
 
-    return puntosGrafico2
+    return dots_graphic_quartiles
     

@@ -15,6 +15,7 @@ from django.conf import settings
 from django.forms.utils import ErrorList
 import datetime
 
+
 # Create your views here.
 
 
@@ -91,93 +92,70 @@ class PaceintePorDiagnostico():
         self.diagnostico = diagnostico
 
 @user_passes_test(lambda u:u.is_staff)
-def diagnosticosView(request):
+def diagnosticsView(request):
 
     
-    try:
     
-        year = datetime.datetime.now().year
-        semanas = Semana.objects.filter(year=year)
-        maxSem = semanas[0]
-        for semana in semanas:
-            
-            
-            if semana.semana > maxSem.semana:
-                maxSem = semana
-        pacientesRec = Paciente.objects.filter(semana=maxSem)
+    
+    year = datetime.datetime.now().year
 
-        
-        diagnosticos = Diagnostico.objects.all()
-        maxDiagnosticos =[]
-        cantPacientesPorDiagnostico = []
-        for diagnostico in diagnosticos:
-            if  "TOTALES" not in diagnostico.nombre :
-                pac = pacientesRec.filter(diagnostico=diagnostico)
-                cantDiagn = 0
-                for i in pac:
-                    cantDiagn += i.cant_casos
-                if cantDiagn != 0 :
-                    maxDiagnosticos.append(diagnostico)
-                    cantPacientesPorDiagnostico.append(cantDiagn)
-            
-        
-        
-        n = len(maxDiagnosticos)
-        print(str(n))
-        # Traverse through all array elements
-        max = 0
-        for i in range(n-1):
-        # range(n) also work but outer loop will repeat one time more than needed.
+    weeks = Week.objects.filter(year=year)
+    max_week = weeks[0]
+    for week in weeks:
+        if week.week > max_week.week:
+            max_week = week
+    
+    
 
-            # Last i elements are already in place
-            
-            for j in range(0, n-i-1):
+    
+    diagnostics = Diagnostic.objects.all()
+    diagnostic_cases = DiagnosticCases.objects.all()
+    alerts = []
+    diagn_cod = []
 
-                # traverse the array from 0 to n-i-1
-                # Swap if the element found is greater
-                # than the next element
-                if cantPacientesPorDiagnostico[j] <  cantPacientesPorDiagnostico[j + 1] :
-                    l = maxDiagnosticos[j]
-                    maxDiagnosticos[j] = maxDiagnosticos[j + 1]
-                    maxDiagnosticos[j + 1] = l 
-                    l = cantPacientesPorDiagnostico[j]
-                    cantPacientesPorDiagnostico[j] = cantPacientesPorDiagnostico[j + 1]
-                    cantPacientesPorDiagnostico[j + 1] = l 
-            if i == 50:
-                break
+    for diagnostic in diagnostics:
+        if len(alerts) != 100:
+            dots =  GetAlert(diagnostic_cases, diagnostic,max_week,year)
+            if dots.cases >= dots.top_rank and dots.cases != 0 and dots.week == max_week.week :
+                if diagnostic.code not in diagn_cod:
                     
-                    
-                
-        
-        pacientePorDiagnosticos = []
-        for l in range(0,len(maxDiagnosticos)):
-            pacientePorDiagnostico = PaceintePorDiagnostico(diagnostico=maxDiagnosticos[l],cantPacientePorDiagnostico=cantPacientesPorDiagnostico[l])
-            pacientePorDiagnosticos.append(pacientePorDiagnostico)
+                    alerts.append({'diagnostic':diagnostic,'cases':dots.cases})
+                    diagn_cod.append(diagnostic.code)
+        else:
+            break
+    alerts
 
-        paginator = Paginator(pacientePorDiagnosticos,50)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context = {
-            'semana':maxSem,
-            'pacientePorDiagnosticos':page_obj,
-            
-        }
-    except:
-        pass
-        context = {}
-    return render(request, 'diagnosticos.html',context)
+
+    
+    
+    paginator = Paginator(alerts,10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'max_week':max_week,
+        'alerts':page_obj,
+        
+    }
+    
+    return render(request, 'diagnostics.html',context)
 
 
 @user_passes_test(lambda u:u.is_staff)
-def diagnosticView(request,codigo_diagnostic):
+def diagnosticView(request,cod_diagnostic):
     
     
-    diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
-    pacientes = Paciente.objects.all()
+    diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
+    diagnostic_cases = DiagnosticCases.objects.all()
    
-    semanas =  Semana.objects.all()
-    p = PacienteFilter(request.GET, queryset=pacientes)
-    s = SemanaFilter(request.GET, queryset=semanas)
+    weeks =  Week.objects.all()
+    
+    
+    p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
+    
+    
+
+    if request.GET:
+        messages.info(request, "Filters aplied")
     try:
         year = int(request.GET.get('year__lt'))
     except:
@@ -190,11 +168,11 @@ def diagnosticView(request,codigo_diagnostic):
     centros = []
     centro = ""
     suma = 0
-    pacientes = p.qs.filter(diagnostico=diagnostico).order_by("centro")
+    pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
     for pac in pacientes:
-        if pac.centro not in centrosName:
-            if pac.centro.nombre == centro:
-                suma += 1
+        if pac.center not in centrosName:
+            if pac.center.name == centro:
+                suma += pac.cases
             else:
             
                 centrosName.append(centro)
@@ -202,25 +180,27 @@ def diagnosticView(request,codigo_diagnostic):
                 co = {
                     'nombre': n,
                     'cases':suma,
-                    'cod':pac.centro.codigo,
+                    'cod':pac.center.code,
                 }
                 
                 centros.append(co)
                 
-                centro = pac.centro.nombre
+                centro = pac.center.name
             
                 suma = 0
         if len(centrosName) >= 20:
             break
-    print(len(centros))
-    medias = funcionGrafico1(p.qs,diagnostico,s.qs)
-    cuartiles = funcionGrafico2(p.qs,diagnostico,s.qs,year,2)
+    
+    medias = GetGraphicAverages(p.qs,diagnostic,weeks,year)
+    cuartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,4)
+    
     context = {
         'medias':medias,
         'cuartiles':cuartiles,
-        'diagnostico':diagnostico,
+        'diagnostic':diagnostic,
         'filterP': p,
-        'filterS': s,
+        
+        
         'google_api_key':settings.APY_KEY,
         'centros': centros,
     }
@@ -231,22 +211,22 @@ def diagnosticView(request,codigo_diagnostic):
 
 @user_passes_test(lambda u:u.is_staff)
 def uploadFileView(request):
-    form = CreateArchivoForm()
+    form = CreateFileForm()
     if request.method == "POST": # If the form has been submitted...
         
          # All validation rules pass
-        form = CreateArchivoForm(request.POST, request.FILES)
+        form = CreateFileForm(request.POST, request.FILES)
         if form.is_valid():
-            tabla = request.FILES["tabla"]
-            archivo = form.save()
-            archivo = Archivo.objects.get(pk=archivo.id)
-            success = read_excel(archivo)
+            
+            file = form.save()
+            file = SpreadSheet.objects.get(pk=file.id)
+            success = read_excel(file)
             
             
             
             if len(success) != 1:
-                archivo = Archivo.objects.get(pk=archivo.id)
-                archivo.delete()
+                file = SpreadSheet.objects.get(pk=file.id)
+                file.delete()
                 for error in success:
                     if error[0] == 1:
 
@@ -261,13 +241,13 @@ def uploadFileView(request):
 
                 
                 return render(request, 'uploadFile.html',context)
-            messages.success(request, "El archivo " + str(archivo.tabla) + ' fue agregado')
+            messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
             return redirect('diagnosticos') ## redirects to aliquot page ordered by the most recent
         
         
 
     else:
-        form = CreateArchivoForm() # An unbound form
+        form = CreateFileForm() # An unbound form
         
     context = {
         'form':form

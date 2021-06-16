@@ -20,18 +20,18 @@ class UserForm(ModelForm):
 
 
         
-class CreateArchivoForm(ModelForm):
+class CreateFileForm(ModelForm):
     #last_name = forms.CharField(blank=False)
     #first_name = forms.CharField(blank=False)
     class Meta:
-        model = Archivo
-        fields = ['tabla']
+        model = SpreadSheet
+        fields = ['file']
         labels = {
-            'watercourse': 'Archivo excel: ',
+            'watercourse': 'Spread Sheets: ',
         }
 
     def __init__(self, *args, **kwargs):
-        super(CreateArchivoForm, self).__init__(*args, **kwargs)
+        super(CreateFileForm, self).__init__(*args, **kwargs)
         
         
 

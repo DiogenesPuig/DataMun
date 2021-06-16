@@ -9,6 +9,6 @@ urlpatterns = [
     path('logout/', logoutView, name="logout"),
     path('perfil/', perfilView, name="perfil"),
     path('uploadFile/', uploadFileView, name="uploadFile"),
-    path('diagnosticos/',diagnosticosView, name="diagnosticos"),
-    path('diagnosticos/<str:codigo_diagnostic>',diagnosticView,name="diagnostic"),
+    path('diagnostics/',diagnosticsView, name="diagnostics"),
+    path('diagnostic/<str:cod_diagnostic>',diagnosticView,name="diagnostic"),
 ]
