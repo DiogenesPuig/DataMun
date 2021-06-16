@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .script import *
 from .filters import *
+from django.conf import settings
 
 from django.forms.utils import ErrorList
 import datetime
@@ -170,7 +171,7 @@ def diagnosticosView(request):
 @user_passes_test(lambda u:u.is_staff)
 def diagnosticView(request,codigo_diagnostic):
     
-
+    
     diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
     pacientes = Paciente.objects.all()
    
@@ -183,7 +184,35 @@ def diagnosticView(request,codigo_diagnostic):
         year = 0
     if year == 0:
         year = 2021
+
     
+    centrosName = []
+    centros = []
+    centro = ""
+    suma = 0
+    pacientes = p.qs.filter(diagnostico=diagnostico).order_by("centro")
+    for pac in pacientes:
+        if pac.centro not in centrosName:
+            if pac.centro.nombre == centro:
+                suma += 1
+            else:
+            
+                centrosName.append(centro)
+                n = 'centro ' +centro
+                co = {
+                    'nombre': n,
+                    'cases':suma,
+                    'cod':pac.centro.codigo,
+                }
+                
+                centros.append(co)
+                
+                centro = pac.centro.nombre
+            
+                suma = 0
+        if len(centrosName) >= 20:
+            break
+    print(len(centros))
     medias = funcionGrafico1(p.qs,diagnostico,s.qs)
     cuartiles = funcionGrafico2(p.qs,diagnostico,s.qs,year,2)
     context = {
@@ -192,6 +221,8 @@ def diagnosticView(request,codigo_diagnostic):
         'diagnostico':diagnostico,
         'filterP': p,
         'filterS': s,
+        'google_api_key':settings.APY_KEY,
+        'centros': centros,
     }
     return render(request, 'diagnostic.html',context)
 

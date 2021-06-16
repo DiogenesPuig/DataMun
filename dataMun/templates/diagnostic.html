@@ -1,179 +1,202 @@
 {% extends 'main.html' %}
 {% load static %}
 {% block title %}
-Home
+Diagnostic
 {% endblock %}
 {% block content %}
 <style>
-.single-line {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: pre;
-  width:100%
-}
+
 </style>
 <div class="section white hoverable">
-    <div class="row " >
-        <div class="col s12" >
+    <div class="row" >
+        <div class="col s12 " >
             <div class="row center" >
                 <h5>Diagnostico {{diagnostico.nombre}}</h5>
             
             
             </div>
-            <div class="row center" >
-                <div class="col s12 m12 l5">
-                    <div class="row" >
+            
+            <div class="row center ">
+                <div class="col s12 m12 l10">
+                    <ul class="tabs">
+                        <li class="tab col s6 "><a class="active" href="#graphics">Graficos</a></li>
+                        <li class="tab col s6 "><a href="#map">Mapa</a></li>
+                        
+                    </ul>
+                    <div id="graphics" class="col s12 ">
+                        <div class="row" >
 
 
-                        <div class="col s12">
-                            <ul class="tabs">
-                                <li class="tab col s3"><a class="active" href="#test1">Medias</a></li>
-                                <li class="tab col s3"><a href="#test2">Cuartiles</a></li>
-                                
-                            </ul>
+                            <div class="col s12">
+                                <ul class="tabs">
+                                    <li class="tab col s3"><a class="active" href="#graphic1">Medias</a></li>
+                                    <li class="tab col s3"><a href="#graphic2">Cuartiles</a></li>
+                                    
+                                </ul>
+                            </div>
+                            <div id="graphic1" class="col s12"><canvas id="medias" ></canvas></div>
+                            <div id="graphic2" class="col s12"><canvas id="cuartiles" ></canvas></div>
+                            
+                    
+                        
+            
+
+
+                    
+                        
+                        
+                        <script>
+                        var ctx = document.getElementById('medias').getContext('2d');
+                        const labels = [{% for i in medias %}{{i.semana}},{% endfor %}]
+                        const data = {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Casos',
+                            data: [{% for i in medias %}{{i.cant_casos}},{% endfor %}],
+                            borderColor: 'rgba(0,0,0,0.8)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Peligro',
+                            data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
+                            fill: {target: '+1'},
+                            backgroundColor: 'rgba(212, 0, 0,0.4)',
+                            borderColor: 'rgb(212, 70, 0)',
+                            
+                            tension: 0.1
+                        },
+                        {
+                            label: 'media',
+                            data: [{% for i in medias %}{{i.media}},{% endfor %}],
+                            fill: {target: '+1'},
+                            backgroundColor: 'rgba(255, 187, 0,0.4)',
+                            borderColor: 'rgb(211, 155, 0)',
+                            
+                            
+                            tension: 0.1
+                        },
+                        {
+                            label: 'objetivo',
+                            data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
+                            fill: {target: 'start' },
+                            backgroundColor: 'rgba(161, 255, 194,0.4)',
+                            borderColor: 'rgba(0,255,0,0.8)',
+                            
+                            tension: 0.1
+                        }]
+                        };
+                        const config = {
+                            type: 'line',
+                            data: data,
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        title: 'semanas'
+                                    },
+                                    y: {
+                                        display: true,
+                                        title: 'casos'
+                                        
+                                    }
+                                }
+                            }   
+                        };
+                        var myChart = new Chart(ctx,config)
+
+
+                        var ctx2 = document.getElementById('cuartiles').getContext('2d');
+                        const labels2 = [{% for i in medias %}{{i.semana}},{% endfor %}]
+                        const data2 = {
+                        labels: labels2,
+                        datasets: [{
+                            label: 'Casos',
+                            data: [{% for i in cuartiles %}{{i.casos}},{% endfor %}],
+                            borderColor: 'rgba(0,0,0,0.8)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Cuartil 3',
+                            data: [{% for i in cuartiles %}{{i.c3}},{% endfor %}],
+                            fill: {target: '+1'},
+                            
+                            borderColor: 'rgba(255,0,0,0.8)',
+                            
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Cuartil 2',
+                            data: [{% for i in cuartiles %}{{i.c2}},{% endfor %}],
+                            fill: {target: '+1'},
+                            backgroundColor: 'rgba(255, 28, 64, 0.4)',
+                            borderColor: 'rgba(255,255,0,0.8)',
+                            
+                            
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Cuartil 1',
+                            data: [{% for i in cuartiles %}{{i.c1}},{% endfor %}],
+                            fill: {target: 'start' },
+                            backgroundColor: 'rgba(203, 148, 85, 0.4)',
+                            borderColor: 'rgba(0,255,0,0.8)',
+                            
+                            tension: 0.1
+                        }]
+                        };
+                        const config2 = {
+                            type: 'line',
+                            data: data2,
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        title: 'semanas'
+                                    },
+                                    y: {
+                                        display: true,
+                                        title: 'casos'
+                                        
+                                    }
+                                }
+                            }   
+                        };
+                        var myChart2 = new Chart(ctx2,config2)
+
+
+                            
+                        </script>
+                        
+                            
                         </div>
-                        <div id="test1" class="col s12"><canvas id="medias" ></canvas></div>
-                        <div id="test2" class="col s12"><canvas id="cuartiles" ></canvas></div>
-                        
-                
                     
-        
-
-
-                   
+                    </div>
+                    <div id="map" class="col s12 " >
                     
-                    
-                    <script>
-                    var ctx = document.getElementById('medias').getContext('2d');
-                    const labels = [{% for i in medias %}{{i.semana}},{% endfor %}]
-                    const data = {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Casos',
-                        data: [{% for i in medias %}{{i.cant_casos}},{% endfor %}],
-                        borderColor: 'rgba(0,0,0,0.8)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Peligro',
-                        data: [{% for i in medias %}{{i.rangoSuperior}},{% endfor %}],
-                        fill: {target: '+1'},
-                        backgroundColor: 'rgba(212, 0, 0,0.4)',
-                        borderColor: 'rgb(212, 70, 0)',
-                        
-                        tension: 0.1
-                    },
-                    {
-                        label: 'media',
-                        data: [{% for i in medias %}{{i.media}},{% endfor %}],
-                        fill: {target: '+1'},
-                        backgroundColor: 'rgba(255, 187, 0,0.4)',
-                        borderColor: 'rgb(211, 155, 0)',
-                        
-                        
-                        tension: 0.1
-                    },
-                    {
-                        label: 'objetivo',
-                        data: [{% for i in medias %}{{i.rangoInferior}},{% endfor %}],
-                        fill: {target: 'start' },
-                        backgroundColor: 'rgba(161, 255, 194,0.4)',
-                        borderColor: 'rgba(0,255,0,0.8)',
-                        
-                        tension: 0.1
-                    }]
-                    };
-                    const config = {
-                        type: 'line',
-                        data: data,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            scales: {
-                                x: {
-                                    display: true,
-                                    title: 'semanas'
-                                },
-                                y: {
-                                    display: true,
-                                    title: 'casos'
-                                    
-                                }
-                            }
-                        }   
-                    };
-                    var myChart = new Chart(ctx,config)
-
-
-                    var ctx2 = document.getElementById('cuartiles').getContext('2d');
-                    const labels2 = [{% for i in medias %}{{i.semana}},{% endfor %}]
-                    const data2 = {
-                    labels: labels2,
-                    datasets: [{
-                        label: 'Casos',
-                        data: [{% for i in cuartiles %}{{i.casos}},{% endfor %}],
-                        borderColor: 'rgba(0,0,0,0.8)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Cuartil 3',
-                        data: [{% for i in cuartiles %}{{i.c3}},{% endfor %}],
-                        fill: {target: '+1'},
-                        
-                        borderColor: 'rgba(255,0,0,0.8)',
-                        
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Cuartil 2',
-                        data: [{% for i in cuartiles %}{{i.c2}},{% endfor %}],
-                        fill: {target: '+1'},
-                        backgroundColor: 'rgba(255, 28, 64, 0.4)',
-                        borderColor: 'rgba(255,255,0,0.8)',
-                        
-                        
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Cuartil 1',
-                        data: [{% for i in cuartiles %}{{i.c1}},{% endfor %}],
-                        fill: {target: 'start' },
-                        backgroundColor: 'rgba(203, 148, 85, 0.4)',
-                        borderColor: 'rgba(0,255,0,0.8)',
-                        
-                        tension: 0.1
-                    }]
-                    };
-                    const config2 = {
-                        type: 'line',
-                        data: data2,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            scales: {
-                                x: {
-                                    display: true,
-                                    title: 'semanas'
-                                },
-                                y: {
-                                    display: true,
-                                    title: 'casos'
-                                    
-                                }
-                            }
-                        }   
-                    };
-                    var myChart2 = new Chart(ctx2,config2)
-
-
-                        
-                    </script>
-                    
-                        
                     </div>
                     
+                    <script>
+                        const centersMap = {
+                            {% for centro in centros %}
+                            {{centro.cod}}:{
+                                name: '{{centro.nombre}}',
+                                cases: {{centro.cases}},
+                                cod: {{centro.cod}},
+                            },
+                            {% endfor %}
+                        };
+                        const length = {% for centro in centros %} +1 {% endfor %};
+                        
+                    </script>
+                    <script src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initMap&libraries=places,drawing" async></script>
                 </div>
-                <div class="col s12 m12 l2">
+                
+                <div class="col s12 m12 l2 ">
+                    <h6>Filtros</h5>
                     <form method="get">
                         {{ filterP.form.as_p }}
                         {{ filterS.form.as_p }}
@@ -184,20 +207,18 @@ Home
                         </button>
                     </form>
                 </div>
-                <div class="col s12 m12 l5" style="height: 400px%;width:100%">
-                    <div id="map" style="height: 100%;"></div>
-                    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHWMg7An4tYYwfFAxFfNR9xaPSkqA8fSg&callback=initMap" async></script>
-
-                </div>
+        
                 
             </div>
-
+            
             
             
         </div>
 
     </div>
 </div>
+
+
 
 
 

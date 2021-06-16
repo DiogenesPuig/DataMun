@@ -18,10 +18,18 @@ class Zona(models.Model):
         return self.codigo.__str__()
 
 
+class Coordinate(models.Model):
+    lattitude = models.FloatField(default=0.0)
+    longitude = models.FloatField(default=0.0)
+    def __str__(self):
+        return self.lattitude.__str__() +"," + self.longitude.__str__()
+    
+
 class Centro(models.Model):
     codigo = models.IntegerField(default=0)
     nombre = models.CharField(max_length=100)
     zona = models.ForeignKey(Zona,on_delete=models.CASCADE)
+    coordinate = models.ForeignKey(Coordinate,on_delete=models.CASCADE,blank=True, null=True)
     def __str__(self):
         return self.nombre
 

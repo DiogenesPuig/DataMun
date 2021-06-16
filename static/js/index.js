@@ -16,13 +16,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+
 document.addEventListener('DOMContentLoaded', function () {
     var elems = document.querySelectorAll('.parallax');
     var instances = M.Parallax.init(elems,);
 });
 document.addEventListener('DOMContentLoaded', function () {
     var elems = document.querySelectorAll('.tabs');
-    var instances = M.Tabs.init(elems,);
+    var instances = M.Tabs.init(elems, {
+        
+        swipeable: false,
+    });
 });
 
  

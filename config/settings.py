@@ -148,5 +148,6 @@ MEDIA_ROOT = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
 LOGIN_URL='/login/'
+
+APY_KEY = "AIzaSyDLozlh9jwajpYcDm2mXgsPHCZcNxUf120"

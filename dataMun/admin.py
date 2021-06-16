@@ -9,3 +9,4 @@ admin.site.register(Semana)
 admin.site.register(Paciente)
 
 admin.site.register(Archivo)
+admin.site.register(Coordinate)
