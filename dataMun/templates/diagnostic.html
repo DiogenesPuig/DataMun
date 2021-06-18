@@ -31,11 +31,13 @@ Diagnostic
                                 <ul class="tabs">
                                     <li class="tab col s3"><a class="active" href="#graphic1">Medias</a></li>
                                     <li class="tab col s3"><a href="#graphic2">Cuartiles</a></li>
+                                    <li class="tab col s3"><a href="#graphic3">Acumulativo</a></li>
                                     
                                 </ul>
                             </div>
-                            <div id="graphic1" class="col s12"><canvas id="medias" ></canvas></div>
-                            <div id="graphic2" class="col s12"><canvas id="cuartiles" ></canvas></div>
+                            <div id="graphic1" class="col s12"><canvas id="averages" ></canvas></div>
+                            <div id="graphic2" class="col s12"><canvas id="quartiles" ></canvas></div>
+                            <div id="graphic3" class="col s12"><canvas id="cumulative" ></canvas></div>
                             
                     
                         
@@ -46,19 +48,19 @@ Diagnostic
                         
                         
                         <script>
-                        var ctx = document.getElementById('medias').getContext('2d');
-                        const labels = [{% for i in medias %}{{i.week}},{% endfor %}]
+                        var ctx = document.getElementById('averages').getContext('2d');
+                        const labels = [{% for i in averages %}{{i.week}},{% endfor %}]
                         const data = {
                         labels: labels,
                         datasets: [{
                             label: 'Casos',
-                            data: [{% for i in medias %}{{i.cases}},{% endfor %}],
+                            data: [{% for i in averages %}{{i.cases}},{% endfor %}],
                             borderColor: 'rgba(0,0,0,0.8)',
                             tension: 0.1
                         },
                         {
                             label: 'Peligro',
-                            data: [{% for i in medias %}{{i.top_rank}},{% endfor %}],
+                            data: [{% for i in averages %}{{i.top_rank}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(212, 0, 0,0.4)',
                             borderColor: 'rgb(212, 70, 0)',
@@ -67,7 +69,7 @@ Diagnostic
                         },
                         {
                             label: 'media',
-                            data: [{% for i in medias %}{{i.average}},{% endfor %}],
+                            data: [{% for i in averages %}{{i.average}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(255, 187, 0,0.4)',
                             borderColor: 'rgb(211, 155, 0)',
@@ -77,7 +79,7 @@ Diagnostic
                         },
                         {
                             label: 'objetivo',
-                            data: [{% for i in medias %}{{i.lower_rank}},{% endfor %}],
+                            data: [{% for i in averages %}{{i.lower_rank}},{% endfor %}],
                             fill: {target: 'start' },
                             backgroundColor: 'rgba(161, 255, 194,0.4)',
                             borderColor: 'rgba(0,255,0,0.8)',
@@ -107,19 +109,19 @@ Diagnostic
                         var myChart = new Chart(ctx,config)
 
 
-                        var ctx2 = document.getElementById('cuartiles').getContext('2d');
-                        const labels2 = [{% for i in cuartiles %}{{i.week}},{% endfor %}]
+                        var ctx2 = document.getElementById('quartiles').getContext('2d');
+                        const labels2 = [{% for i in quartiles %}{{i.week}},{% endfor %}]
                         const data2 = {
                         labels: labels2,
                         datasets: [{
                             label: 'Casos',
-                            data: [{% for i in cuartiles %}{{i.cases}},{% endfor %}],
+                            data: [{% for i in quartiles %}{{i.cases}},{% endfor %}],
                             borderColor: 'rgba(0,0,0,0.8)',
                             tension: 0.1
                         },
                         {
                             label: 'Cuartil 3',
-                            data: [{% for i in cuartiles %}{{i.q3}},{% endfor %}],
+                            data: [{% for i in quartiles %}{{i.q3}},{% endfor %}],
                             fill: {target: '+1'},
                             
                             borderColor: 'rgba(255,0,0,0.8)',
@@ -128,7 +130,7 @@ Diagnostic
                         },
                         {
                             label: 'Cuartil 2',
-                            data: [{% for i in cuartiles %}{{i.q2}},{% endfor %}],
+                            data: [{% for i in quartiles %}{{i.q2}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(255, 28, 64, 0.4)',
                             borderColor: 'rgba(255,255,0,0.8)',
@@ -138,7 +140,7 @@ Diagnostic
                         },
                         {
                             label: 'Cuartil 1',
-                            data: [{% for i in cuartiles %}{{i.q1}},{% endfor %}],
+                            data: [{% for i in quartiles %}{{i.q1}},{% endfor %}],
                             fill: {target: 'start' },
                             backgroundColor: 'rgba(203, 148, 85, 0.4)',
                             borderColor: 'rgba(0,255,0,0.8)',
@@ -168,6 +170,67 @@ Diagnostic
                         var myChart2 = new Chart(ctx2,config2)
 
 
+
+                        var ctx3 = document.getElementById('cumulative').getContext('2d');
+                        const labels3 = [{% for i in cumulative %}{{i.week}},{% endfor %}]
+                        const data3 = {
+                        labels: labels3,
+                        datasets: [{
+                            label: 'Casos',
+                            data: [{% for i in cumulative %}{{i.cases}},{% endfor %}],
+                            borderColor: 'rgba(0,0,0,0.8)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Peligro',
+                            data: [{% for i in cumulative %}{{i.top_rank}},{% endfor %}],
+                            fill: {target: '+1'},
+                            backgroundColor: 'rgba(212, 0, 0,0.4)',
+                            borderColor: 'rgb(212, 70, 0)',
+
+                            tension: 0.1
+                        },
+                        {
+                            label: 'media',
+                            data: [{% for i in cumulative %}{{i.average}},{% endfor %}],
+                            fill: {target: '+1'},
+                            backgroundColor: 'rgba(255, 187, 0,0.4)',
+                            borderColor: 'rgb(211, 155, 0)',
+
+
+                            tension: 0.1
+                        },
+                        {
+                            label: 'objetivo',
+                            data: [{% for i in cumulative %}{{i.lower_rank}},{% endfor %}],
+                            fill: {target: 'start' },
+                            backgroundColor: 'rgba(161, 255, 194,0.4)',
+                            borderColor: 'rgba(0,255,0,0.8)',
+
+                            tension: 0.1
+                        }]
+                        };
+                        const config3 = {
+                            type: 'line',
+                            data: data3,
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        title: 'semanas'
+                                    },
+                                    y: {
+                                        display: true,
+                                        title: 'casos'
+
+                                    }
+                                }
+                            }
+                        };
+                        var myChart3 = new Chart(ctx3,config3)
+
                             
                         </script>
                         
@@ -196,7 +259,7 @@ Diagnostic
                 </div>
                 
                 <div class="col s12 m12 l2 ">
-                    <h6>Filtros</h5>
+                    <h6>Filtros</h6>
                     <form method="get">
                         Paciente:
                         {{ filterP.form.as_p }}

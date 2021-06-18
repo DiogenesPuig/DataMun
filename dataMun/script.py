@@ -271,8 +271,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year):
 
 
 def GetAlert(diagnostic_cases, diagnostic, week,year):
-    
-    
+
     #cases per diagnostic
     
     diag_cases = diagnostic_cases.filter(diagnostic=diagnostic)
@@ -405,4 +404,83 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
         dots_graphic_quartiles.append(dots)
 
     return dots_graphic_quartiles
-    
+
+
+def GetGraphicCumulative(diagnostic_cases, diagnostic, weeks, year):
+    weeks = weeks.filter(year__lt=year)
+    curent_year = year
+    # cases per diagnostic
+
+    diagnostic_cases = diagnostic_cases.filter(diagnostic=diagnostic)
+
+    # arithmetic average of the weeks / n_years
+    averages = [0] * 52
+
+    standard_deviations = [0] * 52
+    # number of years
+    n_years = 0
+    # cases per week of the diferent years
+    cases_per_weeks = [0] * 52
+
+    for i in range(len(averages)):
+        cases = 0
+
+        f = []
+        year = 0
+        n_years = 0
+        suma2 = 0
+        for week in weeks:
+            if week.week == i + 1:
+                pac = diagnostic_cases.filter(week=week)
+                cases
+                for p in pac:
+                    cases += p.cases
+
+                f.append(cases)
+
+            if week.year != year:
+                n_years += 1
+                year = week.year
+
+        if cases != 0:
+
+            average = cases / n_years
+
+            averages[i] = average
+            # calculation of standar deviation
+            standard_deviation = 0
+            if len(f) != 0:
+                for cases in f:
+                    suma2 += (cases - average) ** 2
+
+                standard_deviation = math.sqrt(suma2 / len(f))
+                standard_deviations[i] = standard_deviation
+
+        weeks_qs = Week.objects.filter(week=(i + 1), year=curent_year)
+        cases = 0
+        for week in weeks_qs:
+
+            dia = diagnostic_cases.filter(week=week)
+            for d in dia:
+                # print(d.cases)
+                cases += d.cases
+
+        cases_per_weeks[i] = cases
+
+    # array of class dots for draw the chart
+    dots_graphic_cumulative = []
+    lower_rank = 0
+    top_rank = 0
+    cases = 0
+    average = 0
+    for i in range(len(standard_deviations)):
+        cases += cases_per_weeks[i]
+        average += averages[i]
+        if n_years != 0:
+            lower_rank += averages[i] - (3.18 * standard_deviations[i] / math.sqrt(n_years))
+            top_rank += averages[i] + (3.18 * standard_deviations[i] / math.sqrt(n_years))
+
+        dots = DotsGraphicAverage(average, i + 1, lower_rank, top_rank, cases)
+        dots_graphic_cumulative.append(dots)
+
+    return dots_graphic_cumulative

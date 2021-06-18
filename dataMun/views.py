@@ -148,10 +148,7 @@ def diagnosticView(request,cod_diagnostic):
     diagnostic_cases = DiagnosticCases.objects.all()
    
     weeks =  Week.objects.all()
-    
-    
     p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
-    
     
 
     if request.GET:
@@ -191,12 +188,14 @@ def diagnosticView(request,cod_diagnostic):
         if len(centrosName) >= 20:
             break
     
-    medias = GetGraphicAverages(p.qs,diagnostic,weeks,year)
-    cuartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,4)
-    
+    averages = GetGraphicAverages(p.qs,diagnostic,weeks,year)
+    quartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,4)
+    cumulative = GetGraphicCumulative(p.qs,diagnostic,weeks,year)
+
     context = {
-        'medias':medias,
-        'cuartiles':cuartiles,
+        'averages':averages,
+        'quartiles':quartiles,
+        'cumulative':cumulative,
         'diagnostic':diagnostic,
         'filterP': p,
         
