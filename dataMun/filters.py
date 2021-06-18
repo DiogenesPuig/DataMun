@@ -38,3 +38,9 @@ class WeekFilter(django_filters.FilterSet):
             'year': ['lt'],
         }
 
+class DiagnosticFilter(django_filters.FilterSet):
+    class Meta:
+        model = Diagnostic
+        fields = {
+            'name': ['icontains'],
+        }

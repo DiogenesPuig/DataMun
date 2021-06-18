@@ -93,10 +93,8 @@ class PaceintePorDiagnostico():
 
 @user_passes_test(lambda u:u.is_staff)
 def diagnosticsView(request):
+    diagnostic_filter = DiagnosticFilter(request.GET)
 
-    
-    
-    
     year = datetime.datetime.now().year
 
     weeks = Week.objects.filter(year=year)
@@ -134,6 +132,7 @@ def diagnosticsView(request):
     context = {
         'max_week':max_week,
         'alerts':page_obj,
+        'diagnostic_filter':diagnostic_filter,
         
     }
     
