@@ -16,6 +16,11 @@ from django.forms.utils import ErrorList
 import datetime
 
 
+from rest_framework import generics
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .serializers import *
 # Create your views here.
 
 
@@ -252,4 +257,18 @@ def uploadFileView(request):
 
 
     
+def centersView(request):
+    return render(request,'centers.html')
+#django rest_fremework views
+class CenterView(generics.ListAPIView):
+    
+
+
+    queryset = Center.objects.all()
+    serializer_class = CenterSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_fields = {'name': ['icontains'],'code': ['icontains']}
+
+
+
 
