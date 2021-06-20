@@ -8,6 +8,8 @@ class CenterSerializer(serializers.ModelSerializer):
         model = Center
         fields = '__all__'
 
-
-
+class DiagnosticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diagnostic
+        fields = '__all__'
 

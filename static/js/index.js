@@ -38,32 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-function clearResults(id){
-
-    var results = document.getElementById(id).innerHTML = "";
-}
-function addCenter(code,name,coordinate){
+function filter(end_point,callback) {
     
-    var li = "<li class='collection-item'>"
-    var end_li = '</ul>'
-    var div = "<div class='col s4'>"
-    var end_div= "</div>"
-    
-    var div = document.getElementById("centers").innerHTML += li + div + code +end_div +  div + name +end_div + div + coordinate +end_div + end_li;
-}
-
-function search(name,fileds) {
-    clearResults("centers")
-    
-    var end_point = "api/search_center/?"+fileds+"=" + name 
     $.ajax({
         url: end_point,
         dataType: "json",
         success: function(data){
-            for (i in data){
-                addCenter(data[i].code,data[i].name,data[i].coordinate);
-            }
+            return callback(data);
         },
         error: function(error_data){
             console.log("error")
@@ -71,15 +52,142 @@ function search(name,fileds) {
         },
     })
     
-
 }
-function searchCenter(){
+
+function addDiagnostic(code,name){
+    
+    var li = "<li class='collection-item'><div class='row'><div class='col s2'>"
+    var end_li= "</div></div></li>"
+    
+    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'>" + name + end_li;
+
+    
+    
+}
+
+function filterDiagnostic(){
+    
+    document.getElementById("diagnostics").innerHTML = "";
     var value = document.getElementById("name").value
-    search(value,"name__icontains")
+    var end_point = "api/search_diagnostic/?name__icontains=" + value
+    filter(end_point,function(data){
+        for (i in data){
+            addDiagnostic(data[i].code,data[i].name);
+        }
+    });
 }
 
-searchCenter()
+document.addEventListener('DOMContentLoaded',function () {
+    filterDiagnostic()
+    var input = document.getElementById("name");
+    // Execute a function when the user releases a key on the keyboard
+    input.addEventListener("keyup", function(event) {
+    // Number 13 is the "Enter" key on the keyboard
+    if (event.keyCode === 13) {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("btn_search").click();
+    }
+    }); 
+    var end_point = "api/search_diagnostic/"
+    
+    filter(end_point,function(data){
+        var elems = document.querySelectorAll('.autocomplete');
+        
+        var data_qs = "{"
+        for (i in data){
+            
+            data_qs += "\""+data[i].name.replace("            ","").replace("\"","") + "\":null,\n"
+        }
+        
+        data_qs += "}";
+        data_qs = data_qs.replace(",\n}","}")
+        
+        
+        
+        var obj = JSON.parse(data_qs)
+        
+        var instances = M.Autocomplete.init(elems, {data: obj,onAutocomplete:function(){filterDiagnostic()} });
+    });
+    
+});
+
+
+
+
+function addCenter(code,name,coordinate){
+    
+    var li = "<li class='collection-item'><div class='row valign-wrapper'><div class='col s2'>"
+    var end_li= "</div><a href='#!' class='secondary-content btn'>Editar cordenadas<i class='material-icons right'>edit</i></a></div></li>"
+    
+    var div = document.getElementById("centers").innerHTML += li + code +  "</div><div class='col s5'>" + name +  "</div><div class='col s5'>" + coordinate + end_li;
+}
+
+function filterCenter(){
+    
+    document.getElementById("centers").innerHTML = "";
+    var value = document.getElementById("name").value
+    var end_point = "api/search_center/?name__icontains=" + value
+    filter(end_point,function(data){
+        for (i in data){
+            addCenter(data[i].code,data[i].name,data[i].coordinate);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded',function () {
+    filterCenter()
+
+    var input = document.getElementById("name");
+    // Execute a function when the user releases a key on the keyboard
+    input.addEventListener("keyup", function(event) {
+    // Number 13 is the "Enter" key on the keyboard
+    if (event.keyCode === 13) {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("btn_search").click();
+    }
+    }); 
+    
+    var end_point = "api/search_center/"
+    
+    filter(end_point,function(data){
+        var elems = document.querySelectorAll('.autocomplete');
+        
+        var data_qs = "{"
+        for (i in data){
+            
+            data_qs += "\""+data[i].name + "\":null,"
+        }
+
+        data_qs += "}";
+        data_qs = data_qs.replace(",}","}")
+        
+        
+        var obj = JSON.parse(data_qs)
+        
+        var instances = M.Autocomplete.init(elems, {data: obj,onAutocomplete:function(){filterCenter()} });
+    });
+    
+});
+
+
+
 
 
 
     
+
+
+
+
+
+
+
+
+
+
+
+

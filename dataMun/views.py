@@ -98,7 +98,7 @@ class PaceintePorDiagnostico():
 
 @user_passes_test(lambda u:u.is_staff)
 def diagnosticsView(request):
-    diagnostic_filter = DiagnosticFilter(request.GET)
+    
 
     year = datetime.datetime.now().year
 
@@ -108,14 +108,11 @@ def diagnosticsView(request):
         if week.week > max_week.week:
             max_week = week
     
-    
-
-    
     diagnostics = Diagnostic.objects.all()
     diagnostic_cases = DiagnosticCases.objects.all()
     alerts = []
     diagn_cod = []
-
+    
     for diagnostic in diagnostics:
         if len(alerts) != 100:
             dots =  GetAlert(diagnostic_cases, diagnostic,max_week,year)
@@ -126,19 +123,12 @@ def diagnosticsView(request):
                     diagn_cod.append(diagnostic.code)
         else:
             break
-    alerts
-
+    
 
     
-    
-    paginator = Paginator(alerts,10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
     context = {
         'max_week':max_week,
-        'alerts':page_obj,
-        'diagnostic_filter':diagnostic_filter,
-        
+        'alerts':alerts, 
     }
     
     return render(request, 'diagnostics.html',context)
@@ -267,7 +257,14 @@ class CenterView(generics.ListAPIView):
     queryset = Center.objects.all()
     serializer_class = CenterSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    filter_fields = {'name': ['icontains'],'code': ['icontains']}
+    filter_fields = {'name': ['icontains']}
+
+
+class DiagnosticsView(generics.ListAPIView):
+    queryset = Diagnostic.objects.all()
+    serializer_class = DiagnosticSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_fields = {'name': ['icontains']}
 
 
 

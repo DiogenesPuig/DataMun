@@ -13,32 +13,45 @@ Diagnosticos
 }
 </style>
 <div class="section white hoverable">
-    <div class="row container" >
-        <div class="col s8">
-            <form method="get">
-                Diagnosticos:
-                {{ diagnostic_filter.form.as_p }}
-                <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Buscar
-                    <i class="material-icons right">search</i>
-                </button>
-            </form>
-            <div>
-                {%for i in diagnostic_filter.qs%}
-                    <div class="row " >
-                        <div class="col s2" >{{i.code}}</div>
-                        <div class="col s10 single-line" ><a href="{% url 'diagnostic'  i.code %}">{{i.name}}</a></div>
+    <div class="row" >
+
+        <div class="col s12 s8 l8">
+            <div class="card-content ">
+                        
+                <span class="card-title">Buscar Diagnosticos</span>
+                <div class="row">
+                
+                    <div class="input-field col s12 ">
+                        <input  type="search" class="autocomplete" id="name"  placeholder="Search">
+                        <i id="btn_search" onclick="filterDiagnostic()" class="material-icons center">search</i>
+                        
                     </div>
-                {%endfor%}
+                </div>
+                <div class="row center">
+                        <div class="col s2">
+                            Codigo
+                        </div>
+                        <div class="col s10">
+                            Centro
+                        </div>
+                        
+                    </div>
+                <div class="row" style="overflow: auto;height: 300px;">
+                    
+                    <ul class="collection with-header" id="diagnostics">   
+                        
+                    </ul>
+                </div>
+            
             </div>
         </div>
 
-        <div class="col s4" >
+
+        <div class="col s12 s4 l4" >
             <div class="row center" >
             <h5>Alertas de la semana {{ max_week.week}}</h5>
             </div>
-            
-            
-            
+    
             {% for i in alerts %}
             <div class="row " >
                 <div class="col s2" >{{i.diagnostic.code}}</div>
@@ -46,33 +59,7 @@ Diagnosticos
                 
                 <div class="col s1" >{{i.cases}}</div>
             </div>
-
-            
-            
-            
             {% endfor %}
-            <div class="row " >
-                <input type="date">
-            </div>
-            <div class="row left" >
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if alerts.has_previous %}
-                            <a href="?page=1">&laquo; first</a>
-                            <a href="?page={{ alerts.previous_page_number }}">previous</a>
-                        {% endif %}
-
-                        <span class="current">
-                            Page {{ alerts.number }} of {{ alerts.paginator.num_pages }}.
-                        </span>
-
-                        {% if alerts.has_next %}
-                            <a href="?page={{ alerts.next_page_number }}">next</a>
-                            <a href="?page={{ alerts.paginator.num_pages }}">last &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
         </div>
 
     </div>
