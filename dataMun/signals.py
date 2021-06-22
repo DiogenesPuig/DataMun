@@ -22,10 +22,10 @@ def CreateSemana(sender, instance, created, **kwargs):
     """
         
 
-@receiver(post_delete, sender=Archivo)
+@receiver(post_delete, sender=SpreadSheet)
 def clientupload_delete(sender, instance, **kwargs):
-    if instance.tabla:
+    if instance.file:
         # Pass false so FileField doesn't save the model.
-        instance.tabla.delete(False)
+        instance.file.delete(False)
         
         

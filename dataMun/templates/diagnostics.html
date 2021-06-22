@@ -1,0 +1,71 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}
+Diagnosticos
+{% endblock %}
+{% block content %}
+<style>
+.single-line {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: pre;
+  width:100%
+}
+</style>
+<div class="section white hoverable">
+    <div class="row" >
+
+        <div class="col s12 s8 l8">
+            <div class="card-content ">
+                        
+                <span class="card-title">Buscar Diagnosticos</span>
+                <div class="row">
+                
+                    <div class="input-field col s12 ">
+                        <input  type="search" class="autocomplete" id="name"  placeholder="Search">
+                        <i id="btn_search" onclick="filterDiagnostic()" class="material-icons center">search</i>
+                        
+                    </div>
+                </div>
+                <div class="row center">
+                        <div class="col s2">
+                            Codigo
+                        </div>
+                        <div class="col s10">
+                            Centro
+                        </div>
+                        
+                    </div>
+                <div class="row" style="overflow: auto;height: 300px;">
+                    
+                    <ul class="collection with-header" id="diagnostics">   
+                        
+                    </ul>
+                </div>
+            
+            </div>
+        </div>
+
+
+        <div class="col s12 s4 l4" >
+            <div class="row center" >
+            <h5>Alertas de la semana {{ max_week.week}}</h5>
+            </div>
+    
+            {% for i in alerts %}
+            <div class="row " >
+                <div class="col s2" >{{i.diagnostic.code}}</div>
+                <div class="col s9 single-line" ><a href="{% url 'diagnostic'  i.diagnostic.code %}">{{i.diagnostic.name}}</a></div>
+                
+                <div class="col s1" >{{i.cases}}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+
+
+
+{%endblock%}

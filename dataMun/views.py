@@ -5,18 +5,22 @@ from .forms import *
 from .decorators import *
 from .models import *
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
-import openpyxl
 from .script import *
-import string
+from .filters import *
+from django.conf import settings
 
 from django.forms.utils import ErrorList
 import datetime
-import threading
 
 
+from rest_framework import generics
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .serializers import *
 # Create your views here.
 
 
@@ -75,6 +79,16 @@ def registerView(request):
 
 
 
+def homeView(request):
+    
+    context = {
+        
+    }
+    return render(request, 'home.html',)
+
+
+
+
 
 
 class PaceintePorDiagnostico():
@@ -82,113 +96,128 @@ class PaceintePorDiagnostico():
         self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
         self.diagnostico = diagnostico
 
-
-def homeView(request):
-    try:
-        pacientes = Paciente.objects.all()
-        pacientesRec = []
-        
-        year = datetime.datetime.now().year
-        semanas = Semana.objects.filter(year=year)
-        maxSem = semanas[0]
-        for semana in semanas:
-            
-            
-            if semana.semana > maxSem.semana:
-                maxSem = semana
-        pacientesRec = Paciente.objects.filter(semana=maxSem)
-
-        
-        diagnosticos = Diagnostico.objects.all()
-        maxDiagnosticos =[]
-        cantPacientesPorDiagnostico = []
-        for diagnostico in diagnosticos:
-            cantDiagn = len(pacientesRec.filter(diagnostico=diagnostico))
-            if cantDiagn != 0 and "TOTALES" not in diagnostico.nombre :
-                maxDiagnosticos.append(diagnostico)
-                cantPacientesPorDiagnostico.append(cantDiagn)
-            
-        
-        
-        n = len(maxDiagnosticos)
-        print(str(n))
-        # Traverse through all array elements
-        max = 0
-        for i in range(n-1):
-        # range(n) also work but outer loop will repeat one time more than needed.
+@user_passes_test(lambda u:u.is_staff)
+def diagnosticsView(request):
     
-            # Last i elements are already in place
-            
-            for j in range(0, n-i-1):
+
+    year = datetime.datetime.now().year
+
+    weeks = Week.objects.filter(year=year)
+    max_week = weeks[0]
+    for week in weeks:
+        if week.week > max_week.week:
+            max_week = week
     
-                # traverse the array from 0 to n-i-1
-                # Swap if the element found is greater
-                # than the next element
-                if cantPacientesPorDiagnostico[j] <  cantPacientesPorDiagnostico[j + 1] :
-                    l = maxDiagnosticos[j]
-                    maxDiagnosticos[j] = maxDiagnosticos[j + 1]
-                    maxDiagnosticos[j + 1] = l 
-                    l = cantPacientesPorDiagnostico[j]
-                    cantPacientesPorDiagnostico[j] = cantPacientesPorDiagnostico[j + 1]
-                    cantPacientesPorDiagnostico[j + 1] = l 
-            if i == 50:
-                break
+    diagnostics = Diagnostic.objects.all()
+    diagnostic_cases = DiagnosticCases.objects.all()
+    alerts = []
+    diagn_cod = []
+    
+    for diagnostic in diagnostics:
+        if len(alerts) != 100:
+            dots =  GetAlert(diagnostic_cases, diagnostic,max_week,year)
+            if dots.cases >= dots.top_rank and dots.cases != 0 and dots.week == max_week.week :
+                if diagnostic.code not in diagn_cod:
                     
-                    
-                
-        
-        pacientePorDiagnosticos = []
-        for l in range(0,len(maxDiagnosticos)):
-            pacientePorDiagnostico = PaceintePorDiagnostico(diagnostico=maxDiagnosticos[l],cantPacientePorDiagnostico=cantPacientesPorDiagnostico[l])
-            pacientePorDiagnosticos.append(pacientePorDiagnostico)
+                    alerts.append({'diagnostic':diagnostic,'cases':dots.cases})
+                    diagn_cod.append(diagnostic.code)
+        else:
+            break
+    
 
-        paginator = Paginator(pacientePorDiagnosticos,50)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context = {
-            'semana':maxSem,
-            'pacientePorDiagnosticos':page_obj,
-            
-        }
-    except:
-        pass
-        context = {}
-    return render(request, 'home.html',context)
-
-
-
-def diagnosticView(request,codigo_diagnostic):
-    diagnostico = Diagnostico.objects.get(codigo=codigo_diagnostic)
-    pacientes = Paciente.objects.all()
-    medias = funcionGrafico1(pacientes,diagnostico,0,2022)
+    
     context = {
-        'medias':medias,
-        'diagnostico':diagnostico
+        'max_week':max_week,
+        'alerts':alerts, 
+    }
+    
+    return render(request, 'diagnostics.html',context)
+
+
+@user_passes_test(lambda u:u.is_staff)
+def diagnosticView(request,cod_diagnostic):
+    
+    
+    diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
+    diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
+   
+    weeks =  Week.objects.all()
+    p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
+    
+
+    if request.GET:
+        messages.info(request, "Filters aplied")
+    try:
+        year = int(request.GET.get('year__lt'))
+    except:
+        year = 0
+    if year == 0:
+        year = 2021
+
+    
+    centrosName = []
+    centros = []
+    centro = ""
+    suma = 0
+    pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
+    for pac in pacientes:
+        if pac.center not in centrosName:
+            if pac.center.name == centro:
+                suma += pac.cases
+            else:
+            
+                centrosName.append(centro)
+                n = 'centro ' +centro
+                co = {
+                    'nombre': n,
+                    'cases':suma,
+                    'cod':pac.center.code,
+                }
+                
+                centros.append(co)
+                
+                centro = pac.center.name
+            
+                suma = 0
+        if len(centrosName) >= 20:
+            break
+    
+    averages, cumulative = GetGraphicAverages(p.qs,diagnostic,weeks,year,3)
+    print('graphic 1 and 3 Ok')
+    quartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,3)
+    print('graphic 2 Ok')
+    context = {
+        'averages':averages,
+        'quartiles':quartiles,
+        'cumulative':cumulative,
+        'diagnostic':diagnostic,
+        'filterP': p,
+        'google_api_key':settings.APY_KEY,
+        'centros': centros,
     }
     return render(request, 'diagnostic.html',context)
 
 
 
 
-@login_required()
+@user_passes_test(lambda u:u.is_staff)
 def uploadFileView(request):
-    form = CreateArchivoForm()
+    form = CreateFileForm()
     if request.method == "POST": # If the form has been submitted...
         
          # All validation rules pass
-        form = CreateArchivoForm(request.POST, request.FILES)
+        form = CreateFileForm(request.POST, request.FILES)
         if form.is_valid():
-            tabla = request.FILES["tabla"]
-            archivo = form.save()
-            archivo = Archivo.objects.get(pk=archivo.id)
-            success = read_excel(archivo)
+            
+            file = form.save()
+            file = SpreadSheet.objects.get(pk=file.id)
+            success = read_excel(file)
             
             
             if len(success) != 1:
-                archivo = Archivo.objects.get(pk=archivo.id)
-                #archivo.delete()
 
-
+                file = SpreadSheet.objects.get(pk=file.id)
+                file.delete()
                 for error in success:
                     print(error[1])
                     if error[0] == 1:
@@ -204,13 +233,11 @@ def uploadFileView(request):
                     }
                 return render(request, 'uploadFile.html',context)
 
-            messages.success(request, "El archivo " + str(archivo.tabla) + ' fue agregado')
-            return redirect('home') ## redirects to aliquot page ordered by the most recent
+            messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
+            return redirect('diagnosticos') ## redirects to aliquot page ordered by the most recent
         
-        
-
     else:
-        form = CreateArchivoForm() # An unbound form
+        form = CreateFileForm() # An unbound form
         
     context = {
         'form':form
@@ -219,4 +246,25 @@ def uploadFileView(request):
 
 
     
+def centersView(request):
+    return render(request,'centers.html')
+#django rest_fremework views
+class CenterView(generics.ListAPIView):
+    
+
+
+    queryset = Center.objects.all()
+    serializer_class = CenterSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_fields = {'name': ['icontains']}
+
+
+class DiagnosticsView(generics.ListAPIView):
+    queryset = Diagnostic.objects.all()
+    serializer_class = DiagnosticSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_fields = {'name': ['icontains']}
+
+
+
 
