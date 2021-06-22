@@ -47,7 +47,6 @@ def read_excel(archivo):
                 semana = Semana.objects.get(year=year, semana=semana)
 
                 crearPacientes = False
-                # print("zona obtained")
             except:
                 semana = None
 
@@ -70,15 +69,14 @@ def read_excel(archivo):
                     crearPacientes = False
 
             if crearPacientes:
-
-                for row in sheet.iter_rows():
-                    if row[4].value != "Totales":
+                for row in sheet.iter_rows(values_only=True):
+                    if row[4] != "Totales":
                         try:
-                            zona = int(row[0].value)
-                            cs = int(row[1].value)
-                            cname = str(row[2].value)
-                            cod = str(row[3].value)
-                            diag = str(row[4].value)
+                            zona = int(row[0])
+                            cs = int(row[1])
+                            cname = str(row[2])
+                            cod = str(row[3])
+                            diag = str(row[4])
                         except:
                             print("error obteniendo datos")
                         if zona not in zonasCod:
@@ -102,37 +100,33 @@ def read_excel(archivo):
                             ocentro = None
                             odiagnostico = None
 
-                        #me explicas?
                         if ocentro != None and odiagnostico != None:
-                            try:
-                                for i in (0, len(letras) - 1):
-                                    sexo = ""
-                                    edad = ""
+                            for i in range(5, sheet.max_column-1):
+                                sexo = ""
+                                edad = 0
+                                cant = 0
+                                try:
+                                    cant = int(row[i])
+                                    if i % 2 != 0:
+                                        sexo ="M"
+                                        edad = str(sheet[letras[i-5] + "1"].value)
+                                    else:
+                                        sexo = "F"
+                                        edad = str(sheet[letras[i-6] + "1"].value)
+
+                                    edad = edad.strip(" años")
+                                    edad = edad.strip(" año")
+
                                     try:
-                                        cant = int(row[i+5].value)
-                                        if (i + 1) % 2 != 0:
-                                            sexo = "M"
-                                            edad = str(sheet[letras[i] + "1"].value)
-                                        else:
-                                            sexo = "F"
-                                            edad = str(sheet[letras[i - 1] + "1"].value)
-
-                                        edad = edad.strip(" años")
-                                        edad = edad.strip(" año")
-
-                                        try:
-                                            npaciente = Paciente(sexo=sexo, edad=edad, cant_casos=cant, diagnostico=odiagnostico, centro=ocentro, semana=semana)
-                                            npaciente.save()
-                                            print(npaciente)
-                                        except:
-                                            print("Error creando paciente")
+                                        npaciente = Paciente(sexo=sexo, edad=edad, cant_casos=cant, diagnostico=odiagnostico, centro=ocentro, semana=semana)
+                                        npaciente.save()
                                     except:
-                                        print("error cantidad")
-                            except:
-                                print("error en el for")
+                                        print("Error creando paciente")
+                                except:
+                                    pass
     except:
-        error = [1, "(File is not a zip file.),"]
-        errors.append(error)
+       error = [1, "(File is not a zip file.),"]
+       errors.append(error)
     return errors
 
 
