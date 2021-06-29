@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -95,9 +95,8 @@ DATABASES = {
         'USER': 'nrzzsraxmritgn',
         'PASSWORD': '37459bafdc6cb2fb9e1733fc3946a8bc195235afbedf5d6c152997eea64f276b',
     }
-
 }
-
+"""
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

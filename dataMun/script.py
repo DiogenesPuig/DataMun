@@ -16,6 +16,12 @@ def read_excel(spread_sheet):
     errors = ["None"]
     print(spread_sheet.file)
 
+    zona = 0
+    cs = 0
+    cname = ""
+    cod = ""
+    diag = ""
+
     workbook = openpyxl.load_workbook(spread_sheet.file)
     alphabe = alphabet()
     letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
@@ -35,7 +41,7 @@ def read_excel(spread_sheet):
         zones_cods.append(i.code)
 
     for sheet in workbook.worksheets:
-        #print("Saving week: " + sheet.title)
+        print("Saving week: " + sheet.title)
         crearPacientes = False
 
         try:
@@ -51,12 +57,11 @@ def read_excel(spread_sheet):
             try:
                 year = (sheet.title).split(' ')[0]
                 week = (sheet.title).split(' ')[1]
-                week = Week(year=int(year) , week=(int(week) - 5) , spread_sheet=spread_sheet)
-                # print('semana:',(int(week)-5)+m)
+                week = Week(year=year, week=week, spread_sheet=spread_sheet)
+                week.save()
 
-                week.save(force_insert=True)
                 week = (sheet.title).split(' ')[1]
-                week = Week.objects.get(year=int(year) , week=(int(week) - 5))
+                week = Week.objects.get(year=year, week=week)
                 print("week added")
                 crearPacientes = True
             except:

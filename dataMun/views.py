@@ -217,7 +217,7 @@ def uploadFileView(request):
             if len(success) != 1:
 
                 file = SpreadSheet.objects.get(pk=file.id)
-                file.delete()
+                #file.delete()
                 for error in success:
                     print(error[1])
                     if error[0] == 1:
@@ -249,9 +249,9 @@ def uploadFileView(request):
 def centersView(request):
     return render(request,'centers.html')
 #django rest_fremework views
-class CenterView(generics.ListAPIView):
-    
 
+
+class CenterView(generics.ListAPIView):
 
     queryset = Center.objects.all()
     serializer_class = CenterSerializer
