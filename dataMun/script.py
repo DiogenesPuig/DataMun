@@ -16,8 +16,6 @@ def read_excel(spread_sheet):
     errors = ["None"]
     print(spread_sheet.file)
 
-    
-
     workbook = openpyxl.load_workbook(spread_sheet.file)
     alphabe = alphabet()
     letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
@@ -35,141 +33,136 @@ def read_excel(spread_sheet):
     zones_cods = []
     for i in zones:
         zones_cods.append(i.code)
-    
-    for o in range(6):
-        print('year:',2021-o)
-        for m in range(1,44,8):
-            
-            for sheet in workbook.worksheets:
-                #print("Saving week: " + sheet.title)
+
+    for sheet in workbook.worksheets:
+        print("Saving week: " + sheet.title)
+        crearPacientes = False
+        try:
+            year = (sheet.title).split(' ')[0]
+            week = (sheet.title).split(' ')[1]
+            week = Week.objects.get(year=year, week=week)
+
+            crearPacientes = False
+            # print("zone obtained")
+        except:
+            week = None
+
+        if week == None:
+            try:
+                year = (sheet.title).split(' ')[0]
+                week = (sheet.title).split(' ')[1]
+                week = Week(year=year, week=week, spread_sheet=spread_sheet)
+
+                week.save(force_insert=True)
+                week = (sheet.title).split(' ')[1]
+                week = Week.objects.get(year=year, week=week)
+                print("week added")
+                crearPacientes = True
+            except:
+                print("error: week dont added correctly.")
+                error = [2, "(week dont added correctly.),"]
+                errors.append(error)
+
                 crearPacientes = False
-                try:
-                    year = (sheet.title).split(' ')[0]
-                    week = (sheet.title).split(' ')[1]
-                    week = Week.objects.get(year=int(year)-o, week=(int(week)-5)+m)
 
-                    crearPacientes = False
-                    # print("zone obtained")
-                except:
-                    week = None
+        if crearPacientes:
+            for i in range(0, 6):
+                if i != 2 and i != 4:
+                    print(alphabe[i])
+                    for num in range(1, sheet.max_row):
+                        if num != 1 and num != 2:
+                            cell = str(sheet[alphabe[i] + str(num)].value)
 
-                if week == None:
-                    try:
-                        year = (sheet.title).split(' ')[0]
-                        week = (sheet.title).split(' ')[1]
-                        week = Week(year=int(year)-o, week=(int(week)-5)+m,spread_sheet=spread_sheet)
-                        #print('semana:',(int(week)-5)+m)
+                            if i == 0:
+                                try:
+                                    code = int(cell)
+                                except:
+                                    pass
+                                if code not in zones_cods:
+                                    try:
+                                        zone = Zone(code=int(cell))
 
-                        week.save(force_insert=True)
-                        week = (sheet.title).split(' ')[1]
-                        week = Week.objects.get(year=int(year)-o, week=(int(week)-5)+m)
-                        print("week added")
-                        crearPacientes = True
-                    except:
-                        print("error: week dont added correctly.")
-                        error = [2, "(week dont added correctly.),"]
-                        errors.append(error)
+                                        zone.save(force_insert=True)
+                                        zones_cods.append(int(cell))
+                                        # print("zone added")
+                                    except:
+                                        pass
 
-                        crearPacientes = False
+                            elif i == 1:
+                                try:
+                                    code = int(cell)
+                                except:
+                                    pass
+                                if code not in centers_cods:
+                                    try:
+                                        zone = Zone.objects.get(code=int(str(sheet["A" + str(num)].value)))
+                                        center = Center(code=int(cell), name=str(sheet["C" + str(num)].value),
+                                                        zone=zone)
+                                        center.save(force_insert=True)
+                                        centers_cods.append(int(cell))
+                                        # print("Center creado")
+                                    except:
+                                        pass
 
-                if crearPacientes:
+                            elif i == 3:
+                                try:
+                                    code = str(cell)
+                                except:
+                                    pass
+                                if code not in diagnostics_cods and code != 'None':
+                                    try:
+                                        diagnostic = Diagnostic(code=str(cell), name=str(sheet["E" + str(num)].value))
+                                        diagnostic.save(force_insert=True)
+                                        diagnostics_cods.append(str(cell))
+                                        # print("Diagnostic creado")
+                                    except:
+                                        pass
 
-                    for i in range(0, 6):
-                        if i != 2 and i != 4:
-                            print(alphabe[i])
-                            for num in range(1, sheet.max_row):
-                                if num != 1 and num != 2:
-                                    cell = str(sheet[alphabe[i] + str(num)].value)
+                            elif i == 5:
+                                if str(sheet["E" + str(num)].value) != "TOTALES":
+                                    try:
+                                        diagnostic = Diagnostic.objects.get(code=str(sheet["D" + str(num)].value))
+                                        # print("Diagnostic obtained")
+                                    except:
+                                        print("error d")
+                                        diagnostic = None
+                                    try:
+                                        center = Center.objects.get(code=int(str(sheet["B" + str(num)].value)))
+                                        # print("Center obtained")
+                                    except:
+                                        print("error c")
+                                        center = None
 
-                                    if i == 0:
-                                        try:
-                                            code = int(cell)
-                                        except:
-                                            pass
-                                        if code not in zones_cods:
+                                    if center != None and diagnostic != None:
+                                        for l in range(0, len(letras)):
+                                            cell2 = str(sheet[letras[l] + str(num)].value)
                                             try:
-                                                zone = Zone(code=int(cell))
-
-                                                zone.save(force_insert=True)
-                                                zones_cods.append(int(cell))
-                                                # print("zone added")
+                                                cases = int(cell2)
+                                                sex = ""
+                                                age = ""
+                                                if (l + 1) % 2 != 0:
+                                                    sex = "M"
+                                                    age = str(sheet[letras[l] + "1"].value)
+                                                else:
+                                                    age = str(sheet[letras[l - 1] + "1"].value)
+                                                    sex = "F"
+                                                age = age.strip(" años")
+                                                age = age.strip(" año")
+                                                # cases = random.randint(1, cases*2)
+                                                try:
+                                                    diagnosticCases = DiagnosticCases(sex=sex, age=age,
+                                                                                      diagnostic=diagnostic,
+                                                                                      center=center,
+                                                                                      week=week, cases=cases)
+                                                    diagnosticCases.save(force_insert=True)
+                                                    # print("diagnosticCases creado")
+                                                except:
+                                                    pass
                                             except:
                                                 pass
+                                                # print("No se encontro una casesidad")
 
-                                    elif i == 1:
-                                        try:
-                                            code = int(cell)
-                                        except:
-                                            pass
-                                        if code not in centers_cods:
-                                            try:
-                                                zone = Zone.objects.get(code=int(str(sheet["A" + str(num)].value)))
-                                                center = Center(code=int(cell), name=str(sheet["C" + str(num)].value),zone=zone)
-                                                center.save(force_insert=True)
-                                                centers_cods.append(int(cell))
-                                                # print("Center creado")
-                                            except:
-                                                pass
-
-                                    elif i == 3:
-                                        try:
-                                            code = str(cell)
-                                        except:
-                                            pass
-                                        if code not in diagnostics_cods and code != 'None':
-                                            try:
-                                                diagnostic = Diagnostic(code=str(cell),name=str(sheet["E" + str(num)].value))
-                                                diagnostic.save(force_insert=True)
-                                                diagnostics_cods.append(str(cell))
-                                                # print("Diagnostic creado")
-                                            except:
-                                                pass
-
-                                    elif i == 5:
-                                        if str(sheet["E" + str(num)].value) != "TOTALES":
-                                            try:
-                                                diagnostic = Diagnostic.objects.get(code=str(sheet["D" + str(num)].value))
-                                                # print("Diagnostic obtained")
-                                            except:
-                                                print("error d")
-                                                diagnostic = None
-                                            try:
-                                                center = Center.objects.get(code=int(str(sheet["B" + str(num)].value)))
-                                                # print("Center obtained")
-                                            except:
-                                                print("error c")
-                                                center = None
-
-                                            if center != None and diagnostic != None:
-                                                for l in range(0, len(letras)):
-                                                    cell2 = str(sheet[letras[l] + str(num)].value)
-                                                    try:
-                                                        cases = int(cell2)
-                                                        sex = ""
-                                                        age = ""
-                                                        if (l + 1) % 2 != 0:
-                                                            sex = "M"
-                                                            age = str(sheet[letras[l] + "1"].value)
-                                                        else:
-                                                            age = str(sheet[letras[l - 1] + "1"].value)
-                                                            sex = "F"
-                                                        age = age.strip(" años")
-                                                        age = age.strip(" año")
-                                                        cases = random.randint(1, cases*3)
-                                                        try:
-                                                            diagnosticCases = DiagnosticCases(sex=sex, age=age,
-                                                                                diagnostic=diagnostic, center=center,
-                                                                                week=week,cases=cases)
-                                                            diagnosticCases.save(force_insert=True)
-                                                            # print("diagnosticCases creado")
-                                                        except:
-                                                            pass
-                                                    except:
-                                                        pass
-                                                        # print("No se encontro una casesidad")
-            
-                               
-    #except:
+    # except:
     error = [1, "(File is not a zip file.),"]
     errors.append(error)
     return errors
@@ -245,7 +238,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 for d in dia:
                     #print(d.cases)
                     
-                    cases += d.cases
+                    cases += d.cases  # se tiene que dividir por la poblacion_total multiplicar * 100000) y sumarle 1 ((d.cases/p_total * 100000 ) +1)
         cases_per_weeks[i] = cases
         
     
@@ -266,7 +259,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         cases_acumulative += cases_per_weeks[i]
         average_cumulative += averages[i]
         if n_years != 0:
-            
             lower_rank = averages[i] - (4.30 * standard_deviations[i] / math.sqrt(n_years))
             top_rank = averages[i] + (4.30 * standard_deviations[i] / math.sqrt(n_years))
         if lower_rank >= 0:
