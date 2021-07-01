@@ -1,6 +1,7 @@
-#import json
-from timeit import default_timer
 import openpyxl
+import pandas as pd
+import json
+import sqlite3
 
 workbook = openpyxl.load_workbook('Diagnosticos 1° vez por CS 2021 sem 5 a 12.xlsx')
 
@@ -49,3 +50,25 @@ def workbookToJson(workbook):
     #print(len(rows['rows']))
 
     return rows
+
+dict = workbookToJson(workbook)
+
+conn = sqlite3.connect('../db.sqlite3')
+c = conn.cursor()
+c.execute("CREATE TABLE IF NOT EXISTS raw (zona VARCHAR(1),cod_centro )")
+
+command = "insert into raw values (?)"
+val = ""
+
+for row in dict['rows']:
+    print(json.dumps(row))
+    val += "(" +json.dumps(row) + "), "
+
+
+#c.execute(command,val)
+#conn.commit()
+#conn.close()
+
+
+
+
