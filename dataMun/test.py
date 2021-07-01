@@ -10,7 +10,7 @@ def workbookToJson(workbook):
     rows['rows'] = []
     for sheet in workbook.worksheets:
         fila = 0
-        for row in sheet.iter_rows(min_row=2,values_only=True):
+        for row in sheet.iter_rows(min_row=2,max_row=100,values_only=True):
             cols = [''] * 21
             for i in range(len(cols)):
                 try:
@@ -55,14 +55,19 @@ dict = workbookToJson(workbook)
 
 conn = sqlite3.connect('../db.sqlite3')
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS raw (zona VARCHAR(1),cod_centro )")
+c.execute("CREATE TABLE IF NOT EXISTS raw (zona VARCHAR(1),cod_centro INTEGER, center_name VARCHAR(20), cod_diag VARCHAR(10),diag VARCHAR(50), aM INTEGER,aF INTEGER, bM INTEGER,bF INTEGER, cM INTEGER,cF INTEGER, dM INTEGER,dF INTEGER, eM INTEGER,eF INTEGER, fM INTEGER,fF INTEGER, gM INTEGER,gF INTEGER, hM INTEGER,hF INTEGER);")
 
-command = "insert into raw values (?)"
+command = "insert into raw values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 val = ""
 
 for row in dict['rows']:
-    print(json.dumps(row))
-    val += "(" +json.dumps(row) + "), "
+    val += "("
+    for col in row:
+        val += row[col] + ", "
+    val += ")"
+    val += val.replace(",)","),")
+
+val += val.replace(",)",");")
 
 
 #c.execute(command,val)
