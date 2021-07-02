@@ -67,20 +67,19 @@ def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter
     insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
     return create_sql_statement, insert_sql_statement
 
-workbook = openpyxl.load_workbook('Diagnosticos 1° vez por CS 2021 sem 5 a 12.xlsx')
 
-conn = sqlite3.connect('../db.sqlite3')
-c = conn.cursor()
-create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)        
-
-#print("finalizado el srting:",insert_sql_statement)
-#print(create_sql_statement)
-drop_table = "drop table if exists raw;"
-c.execute(drop_table)
-c.execute(create_sql_statement)
-c.execute(insert_sql_statement)
-conn.commit()
-conn.close()
+def insertWorkbook(workbook):
+    conn = sqlite3.connect('../db.sqlite3')
+    c = conn.cursor()
+    create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)        
+    #print("finalizado el srting:",insert_sql_statement)
+    #print(create_sql_statement)
+    drop_table = "drop table if exists raw;"
+    c.execute(drop_table)
+    c.execute(create_sql_statement)
+    c.execute(insert_sql_statement)
+    conn.commit()
+    conn.close()
 
 
 
