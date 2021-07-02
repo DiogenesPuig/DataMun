@@ -83,6 +83,7 @@ password = settings.DATABASES["default"]["PASSWORD"]
 database = settings.DATABASES["default"]["NAME"]
 
 
+
 def insertWorkbook(spread_sheet):
     start_total = time()
     conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
@@ -117,10 +118,6 @@ def insertWorkbook(spread_sheet):
     workbook.close()
     conn.close()
     print(f"total finished after {round(time()-start_total,4)} seconds")
-
-
-
-
 
 
 class DotsGraphicAverage():

@@ -216,15 +216,21 @@ def uploadFileView(request):
             file = SpreadSheet.objects.get(pk=file.id)
             success = insertWorkbook(file)
             
+
             
             """
+
+
             if len(success) != 1:
+
                 file = SpreadSheet.objects.get(pk=file.id)
-                file.delete()
+                #file.delete()
                 for error in success:
+                    print(error[1])
                     if error[0] == 1:
 
                         form._errors["tabla"] = ErrorList([u" El archivo subido debe ser excel."])
+
                     if error[0] == 2:
                     
                         form._errors["tabla"] = ErrorList([u" Revisa que el titulo de la hoja este correcto con su año y semana"])
@@ -233,13 +239,15 @@ def uploadFileView(request):
                         'form':form
                     }
 
+
                 
                 return render(request, 'uploadFile.html',context)"""
+
+                return render(request, 'uploadFile.html',context)
+
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
             return redirect('diagnostics') ## redirects to aliquot page ordered by the most recent
         
-        
-
     else:
         form = CreateFileForm() # An unbound form
         
@@ -253,9 +261,9 @@ def uploadFileView(request):
 def centersView(request):
     return render(request,'centers.html')
 #django rest_fremework views
-class CenterView(generics.ListAPIView):
-    
 
+
+class CenterView(generics.ListAPIView):
 
     queryset = Center.objects.all()
     serializer_class = CenterSerializer

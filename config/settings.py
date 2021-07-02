@@ -88,13 +88,14 @@ DATABASES = {
         'USER': 'nrzzsraxmritgn',
         'PASSWORD': '37459bafdc6cb2fb9e1733fc3946a8bc195235afbedf5d6c152997eea64f276b',
     }
+
 }
+
 """
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
-        
+        'NAME': 'db.sqlite3',        
     }
 }
 """
