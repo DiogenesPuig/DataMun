@@ -1,7 +1,5 @@
 from django.db import models
 
-
-
 # Create your models here.
 class Diagnostic(models.Model):
     code = models.CharField(max_length=100)
