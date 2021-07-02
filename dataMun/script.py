@@ -171,7 +171,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 for d in dia:
                     #print(d.cases)
                     
-                    cases += d.cases
+                    cases += d.cases  # se tiene que dividir por la poblacion_total multiplicar * 100000) y sumarle 1 ((d.cases/p_total * 100000 ) +1)
         cases_per_weeks[i] = cases
         
     
@@ -192,7 +192,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         cases_acumulative += cases_per_weeks[i]
         average_cumulative += averages[i]
         if n_years != 0:
-            
             lower_rank = averages[i] - (4.30 * standard_deviations[i] / math.sqrt(n_years))
             top_rank = averages[i] + (4.30 * standard_deviations[i] / math.sqrt(n_years))
         if lower_rank >= 0:
