@@ -32,6 +32,20 @@ class Center(models.Model):
     def __str__(self):
         return self.name
 
+ages = [( '<1','<1 año'),
+    ( '1 a 5','1 a 5 años'),
+    ( '6 a 9','6 a 9 años'),
+    ( '10 a 14','10 a 14 años'),
+    ('15 a 19','15 a 19 años'),
+    ('20 a 54 ','20 a 54 años'),
+    ('55 a 64','55 a 64 años'),
+    ('65 y mas','65 y mas años')]
+sex = (
+       ('M', ('Masculino')),
+       ('F', ('Femenino')),
+       )
+
+
 class SpreadSheet(models.Model):
     file = models.FileField( null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,25 +59,10 @@ class Week(models.Model):
     def __str__(self):
         return str(self.year) + ' ' + str(self.week)
 
-class Age(models.Model):
-    from_age = models.IntegerField()
-    to_age = models.IntegerField()
-
-ages = [( '<1','<1 año'),
-    ( '1 a 5','1 a 5 años'),
-    ( '6 a 9','6 a 9 años'),
-    ( '10 a 14','10 a 14 años'),
-    ('15 a 19','15 a 19 años'),
-    ('20 a 54 ','20 a 54 años'),
-    ('55 a 64','55 a 64 años'),
-    ('65 y mas','65 y mas años')]
-
-class Sex(models.Model):
-    name = models.CharField(max_length=30)
 
 class DiagnosticCases(models.Model):
-    sex = models.ForeignKey(Sex,on_delete=models.CASCADE,blank=True)
-    age = models.ForeignKey(Age,on_delete=models.CASCADE,blank=True)
+    sex = models.CharField(choices=sex,max_length=32)
+    age = models.CharField(choices=ages,max_length=32)
     cases = models.IntegerField()
     diagnostic = models.ForeignKey(Diagnostic,on_delete=models.CASCADE,blank=True)
     center = models.ForeignKey(Center,on_delete=models.CASCADE,blank=True)
