@@ -80,9 +80,9 @@ username = settings.DATABASES["default"]["USER"]
 password = settings.DATABASES["default"]["PASSWORD"]
 database = settings.DATABASES["default"]["NAME"]
 
-conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
 
 def insertWorkbook(spread_sheet):
+    conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
     print(spread_sheet.file)
     workbook = openpyxl.load_workbook(spread_sheet.file)
     c = conn.cursor()
