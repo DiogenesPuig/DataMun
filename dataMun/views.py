@@ -98,103 +98,106 @@ class PaceintePorDiagnostico():
 
 @user_passes_test(lambda u:u.is_staff)
 def diagnosticsView(request):
-    
+    try:
 
-    year = datetime.datetime.now().year
+        year = datetime.datetime.now().year
 
-    weeks = Week.objects.filter(year=year)
-    max_week = weeks[0]
-    for week in weeks:
-        if week.week > max_week.week:
-            max_week = week
-    
-    diagnostics = Diagnostic.objects.all()
-    diagnostic_cases = DiagnosticCases.objects.all()
-    alerts = []
-    diagn_cod = []
-    
-    for diagnostic in diagnostics:
-        if len(alerts) != 100:
-            dots =  GetAlert(diagnostic_cases, diagnostic,max_week,year)
-            if dots.cases >= dots.top_rank and dots.cases != 0 and dots.week == max_week.week :
-                if diagnostic.code not in diagn_cod:
-                    
-                    alerts.append({'diagnostic':diagnostic,'cases':dots.cases})
-                    diagn_cod.append(diagnostic.code)
-        else:
-            break
-    
+        weeks = Week.objects.filter(year=year)
+        max_week = weeks[0]
+        for week in weeks:
+            if week.week > max_week.week:
+                max_week = week
+        
+        diagnostics = Diagnostic.objects.all()
+        diagnostic_cases = DiagnosticCases.objects.all()
+        alerts = []
+        diagn_cod = []
+        
+        for diagnostic in diagnostics:
+            if len(alerts) != 100:
+                dots =  GetAlert(diagnostic_cases, diagnostic,max_week,year)
+                if dots.cases >= dots.top_rank and dots.cases != 0 and dots.week == max_week.week :
+                    if diagnostic.code not in diagn_cod:
+                        
+                        alerts.append({'diagnostic':diagnostic,'cases':dots.cases})
+                        diagn_cod.append(diagnostic.code)
+            else:
+                break
+        
 
-    
-    context = {
-        'max_week':max_week,
-        'alerts':alerts, 
-    }
-    
+        
+        context = {
+            'max_week':max_week,
+            'alerts':alerts, 
+        }
+    except:
+        context = {}
     return render(request, 'diagnostics.html',context)
 
 
 @user_passes_test(lambda u:u.is_staff)
 def diagnosticView(request,cod_diagnostic):
     
-    
-    diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
-    diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
-   
-    weeks =  Week.objects.all()
-    p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
-    
-
-    if request.GET:
-        messages.info(request, "Filters aplied")
     try:
-        year = int(request.GET.get('year__lt'))
-    except:
-        year = 0
-    if year == 0:
-        year = 2021
+        diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
+        diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
+    
+        weeks =  Week.objects.all()
+        p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
+        
 
-    
-    centrosName = []
-    centros = []
-    centro = ""
-    suma = 0
-    pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
-    for pac in pacientes:
-        if pac.center not in centrosName:
-            if pac.center.name == centro:
-                suma += pac.cases
-            else:
-            
-                centrosName.append(centro)
-                n = 'centro ' +centro
-                co = {
-                    'nombre': n,
-                    'cases':suma,
-                    'cod':pac.center.code,
-                }
+        if request.GET:
+            messages.info(request, "Filters aplied")
+        try:
+            year = int(request.GET.get('year__lt'))
+        except:
+            year = 0
+        if year == 0:
+            year = 2021
+
+        
+        centrosName = []
+        centros = []
+        centro = ""
+        suma = 0
+        pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
+        for pac in pacientes:
+            if pac.center not in centrosName:
+                if pac.center.name == centro:
+                    suma += pac.cases
+                else:
                 
-                centros.append(co)
+                    centrosName.append(centro)
+                    n = 'centro ' +centro
+                    co = {
+                        'nombre': n,
+                        'cases':suma,
+                        'cod':pac.center.code,
+                    }
+                    
+                    centros.append(co)
+                    
+                    centro = pac.center.name
                 
-                centro = pac.center.name
-            
-                suma = 0
-        if len(centrosName) >= 20:
-            break
-    
-    averages, cumulative = GetGraphicAverages(p.qs,diagnostic,weeks,year,3)
-    print('graphic 1 and 3 Ok')
-    quartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,3)
-    print('graphic 2 Ok')
-    context = {
-        'averages':averages,
-        'quartiles':quartiles,
-        'cumulative':cumulative,
-        'diagnostic':diagnostic,
-        'filterP': p,
-        'google_api_key':settings.APY_KEY,
-        'centros': centros,
-    }
+                    suma = 0
+            if len(centrosName) >= 20:
+                break
+        
+        averages, cumulative = GetGraphicAverages(p.qs,diagnostic,weeks,year,3)
+        print('graphic 1 and 3 Ok')
+        quartiles = GetGraphicQuartiles(p.qs,diagnostic,weeks,year,3)
+        print('graphic 2 Ok')
+        context = {
+            'averages':averages,
+            'quartiles':quartiles,
+            'cumulative':cumulative,
+            'diagnostic':diagnostic,
+            'filterP': p,
+            'google_api_key':settings.APY_KEY,
+            'centros': centros,
+        }
+    except:
+        context = {}
     return render(request, 'diagnostic.html',context)
 
 
@@ -211,9 +214,13 @@ def uploadFileView(request):
             
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
-            success = read_excel(file)
+            success = insertWorkbook(file)
             
+
             
+            """
+
+
             if len(success) != 1:
 
                 file = SpreadSheet.objects.get(pk=file.id)
@@ -231,10 +238,15 @@ def uploadFileView(request):
                     context = {
                         'form':form
                     }
+
+
+                
+                return render(request, 'uploadFile.html',context)"""
+
                 return render(request, 'uploadFile.html',context)
 
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
-            return redirect('diagnosticos') ## redirects to aliquot page ordered by the most recent
+            return redirect('diagnostics') ## redirects to aliquot page ordered by the most recent
         
     else:
         form = CreateFileForm() # An unbound form

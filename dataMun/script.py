@@ -5,132 +5,119 @@ import string
 from .models import *
 import math
 import random
+from time import time
 
 
+import openpyxl
+import psycopg2
+from django.conf import settings
 
-def alphabet():
-    return list(string.ascii_lowercase)
+def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter,sheet_name_1,cols_name,ints,length_varchar,min_row):
+    """
+    Returns create and insert sql statement's from a given workbook 
+    """
+    create_sql_statement = ""
+    create_sql_statement = f"CREATE TABLE IF NOT EXISTS {table_name} "
+    create_sql_statement += f"(id SERIAL PRIMARY KEY , {sheet_name_0} INT, {sheet_name_1} INT,"
+    cols = str(cols_name).strip("]")
+    cols = cols.strip("[")
+    for i in range(len(cols_name)):
+        cols = cols.replace("'","")
+        cols = cols.replace("'","")
+        if i in ints:
+            create_sql_statement += f"{cols_name[i]} INT"
+        else:
+            create_sql_statement += f"{cols_name[i]} CHAR({length_varchar})"
+        
+        if i != len(cols_name) - 1:
+            create_sql_statement += ","
+    create_sql_statement += ");"
+    
 
-
-def read_excel(spread_sheet):
-    errors = ["None"]
-    print(spread_sheet.file)
-
-    zona = 0
-    cs = 0
-    cname = ""
-    cod = ""
-    diag = ""
-
-    workbook = openpyxl.load_workbook(spread_sheet.file)
-    alphabe = alphabet()
-    letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
-    centers = Center.objects.all()
-    centers_cods = []
-    for i in centers:
-        centers_cods.append(i.code)
-
-    diagnostics = Diagnostic.objects.all()
-    diagnostics_cods = []
-    for i in diagnostics:
-        diagnostics_cods.append(i.code)
-
-    zones = Zone.objects.all()
-    zones_cods = []
-    for i in zones:
-        zones_cods.append(i.code)
-
+    insert_sql_statement = ""
+    insert_sql_statement = f"insert into {table_name} ({sheet_name_0},{sheet_name_1},{cols}) values "
     for sheet in workbook.worksheets:
-        print("Saving week: " + sheet.title)
-        crearPacientes = False
-
-        try:
-            year = (sheet.title).split(' ')[0]
-            week = (sheet.title).split(' ')[1]
-            week = Week.objects.get(year=int(year), week=(int(week)-5))
-
-            crearPacientes = False
-        except:
-            week = None
-
-        if week == None:
-            try:
-                year = (sheet.title).split(' ')[0]
-                week = (sheet.title).split(' ')[1]
-                week = Week(year=year, week=week, spread_sheet=spread_sheet)
-                week.save()
-
-                week = (sheet.title).split(' ')[1]
-                week = Week.objects.get(year=year, week=week)
-                print("week added")
-                crearPacientes = True
-            except:
-                print("error: week dont added correctly.")
-                error = [2, "(week dont added correctly.),"]
-                errors.append(error)
-
-                crearPacientes = False
-
-            if crearPacientes:
-                for row in sheet.iter_rows(values_only=True):
-                    if row[4] != "Totales":
+        sheet_name_list = str(sheet.title).split(sheet_name_splitter)
+        year = sheet_name_list[0]
+        week = sheet_name_list[1]
+        for row in sheet.iter_rows(min_row=min_row,values_only=True):
+            values = "("
+            values += f"{year},{week}," 
+            insert = True
+            for i in range(len(cols_name)):
+                try:
+                    if i in ints:
+                        
+                        cell = str(row[i])
                         try:
-                            zona = int(row[0])
-                            cs = int(row[1])
-                            cname = str(row[2])
-                            cod = str(row[3])
-                            diag = str(row[4])
+                            values += f"{int(cell)}"
                         except:
-                            print("error obteniendo datos")
-                        if zona not in zones_cods:
-                            nzona = Zone(code=zona)
-                            nzona.save()
-                            zones_cods.append(zona)
-                        if cs not in centers_cods:
-                            ozona = Zone.objects.get(code=zona)
-                            ncentro = Center(code=cs, name=cname, zone=ozona)
-                            ncentro.save()
-                            centers_cods.append(cs)
-                        if cod not in diagnostics_cods:
-                            ndiagnostico = Diagnostic(code=cod, name=diag)
-                            ndiagnostico.save()
-                            diagnostics_cods.append(cod)
-                        try:
-                            ocentro = Center.objects.get(code=cs)
-                            odiagnostico = Diagnostic.objects.get(code=cod)
-                        except:
-                            print("error de centro y diagnostico")
-                            ocentro = None
-                            odiagnostico = None
+                            values += "null"
+                    else:
+                        if str(row[i]) != "" and str(row[i]) != "None":
+                            values += f"'{str(row[i]).rstrip()}'"
+                        else:
+                            insert = False
+                    
+                    if i != len(cols_name) - 1:
+                        values += ","
+                    else:  
+                        break
+                except:
+                    return print("error the length of the list cols_name exeed the length of max columns of the sheet")
+                
+            values += ")"
 
-                        if ocentro != None and odiagnostico != None:
-                            for i in range(5, sheet.max_column-1):
-                                sexo = ""
-                                edad = 0
-                                cant = 0
-                                try:
-                                    cant = int(row[i])
-                                    if i % 2 != 0:
-                                        sexo ="M"
-                                        edad = str(sheet[letras[i-5] + "1"].value)
-                                    else:
-                                        sexo = "F"
-                                        edad = str(sheet[letras[i-6] + "1"].value)
+            if insert:
+                insert_sql_statement += values + ",\n"
+    temp = len(insert_sql_statement)
+    insert_sql_statement = insert_sql_statement[:temp - 2]
+    insert_sql_statement += ";"
 
-                                    edad = edad.strip(" años")
-                                    edad = edad.strip(" año")
+    #insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
+    return create_sql_statement, insert_sql_statement
 
-                                    try:
-                                        npaciente = DiagnosticCases(sex=sexo, age=edad, cases=cant, diagnostic=odiagnostico, center=ocentro, week=week)
-                                        npaciente.save()
-                                    except:
-                                        print("Error creando paciente")
-                                except:
-                                    pass
+hostname = settings.DATABASES["default"]["HOST"]
+username = settings.DATABASES["default"]["USER"]
+password = settings.DATABASES["default"]["PASSWORD"]
+database = settings.DATABASES["default"]["NAME"]
 
-    error = [1, "(File is not a zip file.),"]
-    errors.append(error)
-    return errors
+
+
+def insertWorkbook(spread_sheet):
+    start_total = time()
+    conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
+    print(spread_sheet.file)
+    start = time()
+    print("load_workbook started")
+    workbook = openpyxl.load_workbook(filename=spread_sheet.file,read_only=True)
+    print(f"load_workbook finished after {round(time()-start,4)} seconds")
+    c = conn.cursor()
+    start = time()
+    print("workbookToSqlStatements started")
+    create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)        
+    print(f"workbookToSqlStatements finished after {round(time()-start,4)} seconds")
+    #print("finalizado el srting:",insert_sql_statement)
+    #print(create_sql_statement)
+    delete_table = "delete from raw;"
+    start = time()
+    print("delete_table started")
+    c.execute(delete_table)
+    print(f"delete_table finished after {round(time()-start,4)} seconds")
+    start = time()
+    print("create_sql_statement started")
+    c.execute(create_sql_statement)
+    print(f"create_sql_statement finished after {round(time()-start,4)} seconds")
+    start = time()
+    print("insert_sql_statement started")
+    c.execute(insert_sql_statement)
+    print(f"insert_sql_statement finished after {round(time()-start,4)} seconds")
+    conn.commit()
+    print(f"commit finished after {round(time()-start,4)} seconds")
+    
+    workbook.close()
+    conn.close()
+    print(f"total finished after {round(time()-start_total,4)} seconds")
 
 
 class DotsGraphicAverage():
@@ -203,7 +190,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 for d in dia:
                     #print(d.cases)
                     
-                    cases += d.cases
+                    cases += d.cases  # se tiene que dividir por la poblacion_total multiplicar * 100000) y sumarle 1 ((d.cases/p_total * 100000 ) +1)
         cases_per_weeks[i] = cases
         
     
@@ -224,7 +211,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         cases_acumulative += cases_per_weeks[i]
         average_cumulative += averages[i]
         if n_years != 0:
-            
             lower_rank = averages[i] - (4.30 * standard_deviations[i] / math.sqrt(n_years))
             top_rank = averages[i] + (4.30 * standard_deviations[i] / math.sqrt(n_years))
         if lower_rank >= 0:
