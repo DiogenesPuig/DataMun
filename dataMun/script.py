@@ -5,7 +5,7 @@ import string
 from .models import *
 import math
 import random
-
+from time import time
 
 
 import openpyxl
@@ -48,7 +48,7 @@ def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter
                 try:
                     if i in ints:
                         
-                        cell = str(row[i]).rstrip()
+                        cell = str(row[i])
                         try:
                             values += f"{int(cell)}"
                         except:
@@ -70,9 +70,11 @@ def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter
 
             if insert:
                 insert_sql_statement += values + ",\n"
-
+    temp = len(insert_sql_statement)
+    insert_sql_statement = insert_sql_statement[:temp - 2]
     insert_sql_statement += ";"
-    insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
+
+    #insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
     return create_sql_statement, insert_sql_statement
 
 hostname = settings.DATABASES["default"]["HOST"]
@@ -82,19 +84,39 @@ database = settings.DATABASES["default"]["NAME"]
 
 
 def insertWorkbook(spread_sheet):
+    start_total = time()
     conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
     print(spread_sheet.file)
-    workbook = openpyxl.load_workbook(spread_sheet.file)
+    start = time()
+    print("load_workbook started")
+    workbook = openpyxl.load_workbook(filename=spread_sheet.file,read_only=True)
+    print(f"load_workbook finished after {round(time()-start,4)} seconds")
     c = conn.cursor()
+    start = time()
+    print("workbookToSqlStatements started")
     create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)        
+    print(f"workbookToSqlStatements finished after {round(time()-start,4)} seconds")
     #print("finalizado el srting:",insert_sql_statement)
     #print(create_sql_statement)
-    drop_table = "drop table if exists raw;"
-    c.execute(drop_table)
+    delete_table = "delete from raw;"
+    start = time()
+    print("delete_table started")
+    c.execute(delete_table)
+    print(f"delete_table finished after {round(time()-start,4)} seconds")
+    start = time()
+    print("create_sql_statement started")
     c.execute(create_sql_statement)
+    print(f"create_sql_statement finished after {round(time()-start,4)} seconds")
+    start = time()
+    print("insert_sql_statement started")
     c.execute(insert_sql_statement)
+    print(f"insert_sql_statement finished after {round(time()-start,4)} seconds")
     conn.commit()
+    print(f"commit finished after {round(time()-start,4)} seconds")
+    
+    workbook.close()
     conn.close()
+    print(f"total finished after {round(time()-start_total,4)} seconds")
 
 
 
