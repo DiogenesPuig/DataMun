@@ -211,10 +211,10 @@ def uploadFileView(request):
             
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
-            success = read_excel(file)
+            success = insertWorkbook(file)
             
             
-            
+            """
             if len(success) != 1:
                 file = SpreadSheet.objects.get(pk=file.id)
                 file.delete()
@@ -231,9 +231,9 @@ def uploadFileView(request):
                     }
 
                 
-                return render(request, 'uploadFile.html',context)
+                return render(request, 'uploadFile.html',context)"""
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
-            return redirect('diagnosticos') ## redirects to aliquot page ordered by the most recent
+            return redirect('diagnostics') ## redirects to aliquot page ordered by the most recent
         
         
 

@@ -8,171 +8,97 @@ import random
 
 
 
-def alphabet():
-    return list(string.ascii_lowercase)
+import openpyxl
+import psycopg2
+from django.conf import settings
 
-
-def read_excel(spread_sheet):
-    errors = ["None"]
-    print(spread_sheet.file)
-
+def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter,sheet_name_1,cols_name,ints,length_varchar,min_row):
+    """
+    Returns create and insert sql statement's from a given workbook 
+    """
+    create_sql_statement = ""
+    create_sql_statement = f"CREATE TABLE IF NOT EXISTS {table_name} "
+    create_sql_statement += f"(id SERIAL PRIMARY KEY , {sheet_name_0} INT, {sheet_name_1} INT,"
+    cols = str(cols_name).strip("]")
+    cols = cols.strip("[")
+    for i in range(len(cols_name)):
+        cols = cols.replace("'","")
+        cols = cols.replace("'","")
+        if i in ints:
+            create_sql_statement += f"{cols_name[i]} INT"
+        else:
+            create_sql_statement += f"{cols_name[i]} CHAR({length_varchar})"
+        
+        if i != len(cols_name) - 1:
+            create_sql_statement += ","
+    create_sql_statement += ");"
     
 
-    workbook = openpyxl.load_workbook(spread_sheet.file)
-    alphabe = alphabet()
-    letras = ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u']
-    centers = Center.objects.all()
-    centers_cods = []
-    for i in centers:
-        centers_cods.append(i.code)
-
-    diagnostics = Diagnostic.objects.all()
-    diagnostics_cods = []
-    for i in diagnostics:
-        diagnostics_cods.append(i.code)
-
-    zones = Zone.objects.all()
-    zones_cods = []
-    for i in zones:
-        zones_cods.append(i.code)
-    
-    for o in range(6):
-        print('year:',2021-o)
-        for m in range(1,44,8):
-            
-            for sheet in workbook.worksheets:
-                #print("Saving week: " + sheet.title)
-                crearPacientes = False
+    insert_sql_statement = ""
+    insert_sql_statement = f"insert into {table_name} ({sheet_name_0},{sheet_name_1},{cols}) values "
+    for sheet in workbook.worksheets:
+        sheet_name_list = str(sheet.title).split(sheet_name_splitter)
+        year = sheet_name_list[0]
+        week = sheet_name_list[1]
+        for row in sheet.iter_rows(min_row=min_row,values_only=True):
+            values = "("
+            values += f"{year},{week}," 
+            insert = True
+            for i in range(len(cols_name)):
                 try:
-                    year = (sheet.title).split(' ')[0]
-                    week = (sheet.title).split(' ')[1]
-                    week = Week.objects.get(year=int(year)-o, week=(int(week)-5)+m)
-
-                    crearPacientes = False
-                    # print("zone obtained")
+                    if i in ints:
+                        
+                        cell = str(row[i]).rstrip()
+                        try:
+                            values += f"{int(cell)}"
+                        except:
+                            values += "null"
+                    else:
+                        if str(row[i]) != "" and str(row[i]) != "None":
+                            values += f"'{str(row[i]).rstrip()}'"
+                        else:
+                            insert = False
+                    
+                    if i != len(cols_name) - 1:
+                        values += ","
+                    else:  
+                        break
                 except:
-                    week = None
+                    return print("error the length of the list cols_name exeed the length of max columns of the sheet")
+                
+            values += ")"
 
-                if week == None:
-                    try:
-                        year = (sheet.title).split(' ')[0]
-                        week = (sheet.title).split(' ')[1]
-                        week = Week(year=int(year)-o, week=(int(week)-5)+m,spread_sheet=spread_sheet)
-                        #print('semana:',(int(week)-5)+m)
+            if insert:
+                insert_sql_statement += values + ",\n"
 
-                        week.save(force_insert=True)
-                        week = (sheet.title).split(' ')[1]
-                        week = Week.objects.get(year=int(year)-o, week=(int(week)-5)+m)
-                        print("week added")
-                        crearPacientes = True
-                    except:
-                        print("error: week dont added correctly.")
-                        error = [2, "(week dont added correctly.),"]
-                        errors.append(error)
+    insert_sql_statement += ";"
+    insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
+    return create_sql_statement, insert_sql_statement
 
-                        crearPacientes = False
+hostname = settings.DATABASES["default"]["HOST"]
+username = settings.DATABASES["default"]["USER"]
+password = settings.DATABASES["default"]["PASSWORD"]
+database = settings.DATABASES["default"]["NAME"]
 
-                if crearPacientes:
+conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
 
-                    for i in range(0, 6):
-                        if i != 2 and i != 4:
-                            print(alphabe[i])
-                            for num in range(1, sheet.max_row):
-                                if num != 1 and num != 2:
-                                    cell = str(sheet[alphabe[i] + str(num)].value)
+def insertWorkbook(spread_sheet):
+    print(spread_sheet.file)
+    workbook = openpyxl.load_workbook(spread_sheet.file)
+    c = conn.cursor()
+    create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)        
+    #print("finalizado el srting:",insert_sql_statement)
+    #print(create_sql_statement)
+    drop_table = "drop table if exists raw;"
+    c.execute(drop_table)
+    c.execute(create_sql_statement)
+    c.execute(insert_sql_statement)
+    conn.commit()
+    conn.close()
 
-                                    if i == 0:
-                                        try:
-                                            code = int(cell)
-                                        except:
-                                            pass
-                                        if code not in zones_cods:
-                                            try:
-                                                zone = Zone(code=int(cell))
 
-                                                zone.save(force_insert=True)
-                                                zones_cods.append(int(cell))
-                                                # print("zone added")
-                                            except:
-                                                pass
 
-                                    elif i == 1:
-                                        try:
-                                            code = int(cell)
-                                        except:
-                                            pass
-                                        if code not in centers_cods:
-                                            try:
-                                                zone = Zone.objects.get(code=int(str(sheet["A" + str(num)].value)))
-                                                center = Center(code=int(cell), name=str(sheet["C" + str(num)].value),zone=zone)
-                                                center.save(force_insert=True)
-                                                centers_cods.append(int(cell))
-                                                # print("Center creado")
-                                            except:
-                                                pass
 
-                                    elif i == 3:
-                                        try:
-                                            code = str(cell)
-                                        except:
-                                            pass
-                                        if code not in diagnostics_cods and code != 'None':
-                                            try:
-                                                diagnostic = Diagnostic(code=str(cell),name=str(sheet["E" + str(num)].value))
-                                                diagnostic.save(force_insert=True)
-                                                diagnostics_cods.append(str(cell))
-                                                # print("Diagnostic creado")
-                                            except:
-                                                pass
-
-                                    elif i == 5:
-                                        if str(sheet["E" + str(num)].value) != "TOTALES":
-                                            try:
-                                                diagnostic = Diagnostic.objects.get(code=str(sheet["D" + str(num)].value))
-                                                # print("Diagnostic obtained")
-                                            except:
-                                                print("error d")
-                                                diagnostic = None
-                                            try:
-                                                center = Center.objects.get(code=int(str(sheet["B" + str(num)].value)))
-                                                # print("Center obtained")
-                                            except:
-                                                print("error c")
-                                                center = None
-
-                                            if center != None and diagnostic != None:
-                                                for l in range(0, len(letras)):
-                                                    cell2 = str(sheet[letras[l] + str(num)].value)
-                                                    try:
-                                                        cases = int(cell2)
-                                                        sex = ""
-                                                        age = ""
-                                                        if (l + 1) % 2 != 0:
-                                                            sex = "M"
-                                                            age = str(sheet[letras[l] + "1"].value)
-                                                        else:
-                                                            age = str(sheet[letras[l - 1] + "1"].value)
-                                                            sex = "F"
-                                                        age = age.strip(" años")
-                                                        age = age.strip(" año")
-                                                        cases = random.randint(1, cases*3)
-                                                        try:
-                                                            diagnosticCases = DiagnosticCases(sex=sex, age=age,
-                                                                                diagnostic=diagnostic, center=center,
-                                                                                week=week,cases=cases)
-                                                            diagnosticCases.save(force_insert=True)
-                                                            # print("diagnosticCases creado")
-                                                        except:
-                                                            pass
-                                                    except:
-                                                        pass
-                                                        # print("No se encontro una casesidad")
-            
-                               
-    #except:
-    error = [1, "(File is not a zip file.),"]
-    errors.append(error)
-    return errors
 
 
 class DotsGraphicAverage():
