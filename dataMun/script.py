@@ -99,15 +99,17 @@ def insertWorkbook(spread_sheet):
     print(f"workbookToSqlStatements finished after {round(time()-start,4)} seconds")
     #print("finalizado el srting:",insert_sql_statement)
     #print(create_sql_statement)
-    delete_table = "delete from raw;"
-    start = time()
-    print("delete_table started")
-    c.execute(delete_table)
-    print(f"delete_table finished after {round(time()-start,4)} seconds")
     start = time()
     print("create_sql_statement started")
     c.execute(create_sql_statement)
     print(f"create_sql_statement finished after {round(time()-start,4)} seconds")
+    delete_table = "delete from raw;"
+
+    start = time()
+    print("delete_table started")
+    c.execute(delete_table)
+    print(f"delete_table finished after {round(time() - start, 4)} seconds")
+
     start = time()
     print("insert_sql_statement started")
     c.execute(insert_sql_statement)
