@@ -19,11 +19,16 @@ class DiagnosticCasesAdmin(admin.ModelAdmin):
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('year','week',)
 
+class YearAdmin(admin.ModelAdmin):
+    list_display = ('year', 'population',)
+
+
 # Register your models here.
 admin.site.register(Center,CenterAdmin)
 admin.site.register(Zone,ZoneAdmin)
 admin.site.register(Diagnostic,DiagnosticAdmin)
 admin.site.register(Week,WeekAdmin)
+admin.site.register(Year,YearAdmin)
 admin.site.register(DiagnosticCases,DiagnosticCasesAdmin)
 admin.site.register(SpreadSheet)
 admin.site.register(Coordinate)

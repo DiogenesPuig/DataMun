@@ -34,10 +34,13 @@ class SpreadSheet(models.Model):
     file = models.FileField( null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Year(models.Model):
+    year = models.IntegerField()
+    population = models.IntegerField()
 
 class Week(models.Model):
     week = models.IntegerField()
-    year = models.IntegerField()
+    year = models.ForeignKey(Year,on_delete=models.CASCADE,null=False, related_name = "weeks")
     spread_sheet = models.ForeignKey(SpreadSheet,on_delete=models.CASCADE,blank=True, null=True)
     creation = models.DateTimeField(auto_now_add=True)
     def __str__(self):
