@@ -3,6 +3,10 @@
 {% block title %}
 Diagnosticos
 {% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/smain.js'%}" defer></script>
+{% endblock %}
 {% block content %}
 <style>
 .single-line {
@@ -17,14 +21,26 @@ Diagnosticos
 
         <div class="col s12 s8 l8">
             <div class="card-content ">
-                        
+
                 <span class="card-title">Buscar Diagnosticos</span>
+
+                <div class="input-field col s12 ">
+                    <form id="search-form" autocomplete="off">
+                        {% csrf_token %}
+                        <input type="text" id="search-input" class="p-3 w-50 search" placeholder="Buscar una Enfermedad">
+                    </form>
+                    <div id="results-box" class="results-card z-depth-2 not-visible">
+                    </div>
+                </div>
+                <!--
+                <p>Arriba da urls para redireccionar abajo no</p>
+
+
                 <div class="row">
-                
                     <div class="input-field col s12 ">
                         <input  type="search" class="autocomplete" id="name"  placeholder="Search">
                         <i id="btn_search" onclick="filterDiagnostic()" class="material-icons center">search</i>
-                        
+
                     </div>
                 </div>
                 <div class="row center">
@@ -34,15 +50,14 @@ Diagnosticos
                         <div class="col s10">
                             Centro
                         </div>
-                        
-                    </div>
+                </div>
                 <div class="row" style="overflow: auto;height: 300px;">
-                    
-                    <ul class="collection with-header" id="diagnostics">   
-                        
+
+                    <ul class="collection with-header" id="diagnostics">
+
                     </ul>
                 </div>
-            
+                --->
             </div>
         </div>
 
@@ -51,12 +66,12 @@ Diagnosticos
             <div class="row center" >
             <h5>Alertas de la semana {{ max_week.week}}</h5>
             </div>
-    
+
             {% for i in alerts %}
             <div class="row " >
                 <div class="col s2" >{{i.diagnostic.code}}</div>
                 <div class="col s9 single-line" ><a href="{% url 'diagnostic'  i.diagnostic.code %}">{{i.diagnostic.name}}</a></div>
-                
+
                 <div class="col s1" >{{i.cases}}</div>
             </div>
             {% endfor %}

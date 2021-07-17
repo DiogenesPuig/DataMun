@@ -1,18 +1,15 @@
 from django.shortcuts import render
-
+from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth import authenticate, login, logout
 from .forms import *
 from .decorators import *
-from .models import *
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.core.paginator import Paginator
 from .script import *
 from .filters import *
 from django.conf import settings
+from django.http import JsonResponse
 
-from django.forms.utils import ErrorList
 import datetime
 
 from rest_framework import generics
@@ -125,6 +122,7 @@ def diagnosticsView(request):
 
 
 @user_passes_test(lambda u: u.is_staff)
+######## aca
 def diagnosticView(request, cod_diagnostic):
     try:
         diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
@@ -186,6 +184,28 @@ def diagnosticView(request, cod_diagnostic):
         context = {}
     return render(request, 'diagnostic.html', context)
 
+@csrf_protect
+def search_results(request):
+    if request.is_ajax():
+        res = None
+        diagnostic = request.POST.get('diagnostic')
+        qs = Diagnostic.objects.filter(name__icontains=diagnostic)
+        if len(qs) > 0 and len(diagnostic) > 0:
+            data = []
+            for position in qs:
+                item ={
+                    'pk':position.pk,
+                    'name':position.name,
+                    'code':position.code
+                }
+                data.append(item)
+                res = data
+        else:
+            res = "Sin resultados..."
+
+        return JsonResponse({'data': res})
+    return JsonResponse({})
+
 
 @user_passes_test(lambda u: u.is_staff)
 def uploadFileView(request):
@@ -246,4 +266,3 @@ class DiagnosticsView(generics.ListAPIView):
     serializer_class = DiagnosticSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_fields = {'name': ['icontains']}
-

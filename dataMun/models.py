@@ -36,7 +36,7 @@ class SpreadSheet(models.Model):
 
 class Year(models.Model):
     year = models.IntegerField()
-    population = models.IntegerField()
+    population = models.IntegerField(null=True)
 
 class Week(models.Model):
     week = models.IntegerField()

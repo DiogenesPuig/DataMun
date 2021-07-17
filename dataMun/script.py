@@ -6,7 +6,7 @@ from .models import *
 import math
 import random
 from time import time
-
+import sqlite3
 
 import openpyxl
 import psycopg2
@@ -86,7 +86,8 @@ database = settings.DATABASES["default"]["NAME"]
 
 def insertWorkbook(spread_sheet):
     start_total = time()
-    conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
+    #conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
+    conn = sqlite3.connect('db.sqlite3')
     print(spread_sheet.file)
     start = time()
     print("load_workbook started")

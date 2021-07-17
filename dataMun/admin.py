@@ -27,7 +27,7 @@ class YearAdmin(admin.ModelAdmin):
 admin.site.register(Center,CenterAdmin)
 admin.site.register(Zone,ZoneAdmin)
 admin.site.register(Diagnostic,DiagnosticAdmin)
-admin.site.register(Week,WeekAdmin)
+admin.site.register(Week)
 admin.site.register(Year,YearAdmin)
 admin.site.register(DiagnosticCases,DiagnosticCasesAdmin)
 admin.site.register(SpreadSheet)
