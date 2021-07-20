@@ -32,6 +32,7 @@ const sendSearchData = (diagnostic) => {
                 if(searchInput.value.length > 0){
                     resultsBox.innerHTML = `<b>${data}</b>`
                 } else {
+                    resultsBox.innerHTML = ""
                     resultsBox.classList.add('not-visible')
                 }
             }

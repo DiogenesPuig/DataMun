@@ -47,8 +47,11 @@ class Week(models.Model):
         return str(self.year) + ' ' + str(self.week)
 
 class Age(models.Model):
-    from_age = models.IntegerField()
-    to_age = models.IntegerField()
+    from_age = models.IntegerField(unique=True)
+    to_age = models.IntegerField(unique=True)
+    def __str__(self):
+        return 'De ' + str(self.from_age) + ' a ' + str(self.to_age)
+
 
 ages = [( '<1','<1 año'),
     ( '1 a 5','1 a 5 años'),
@@ -60,7 +63,9 @@ ages = [( '<1','<1 año'),
     ('65 y mas','65 y mas años')]
 
 class Sex(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30,unique=True) #should be 'gender'
+    def __str__(self):
+        return str(self.name)
 
 class DiagnosticCases(models.Model):
     sex = models.ForeignKey(Sex,on_delete=models.CASCADE,blank=True)
@@ -71,7 +76,7 @@ class DiagnosticCases(models.Model):
     week = models.ForeignKey(Week,on_delete=models.CASCADE,blank=True)
     creation = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        str = 'sex: ' + self.sex + ' age: ' + self.age + ' diagnostic: ' + self.diagnostic.__str__()
+        str = 'sex: ' + self.sex.name + ' age: ' + self.age.__str__() + ' diagnostic: ' + self.diagnostic.__str__()
         return str
 
 
