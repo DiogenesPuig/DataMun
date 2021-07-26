@@ -124,64 +124,63 @@ def diagnosticsView(request):
 @user_passes_test(lambda u: u.is_staff)
 ######## aca
 def diagnosticView(request, cod_diagnostic):
+    diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
+    diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
+
+    weeks = Week.objects.all()
+    p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
+
+    if request.GET:
+        messages.info(request, "Filters aplied")
     try:
-        diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
-        diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
-
-        weeks = Week.objects.all()
-        p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
-
-        if request.GET:
-            messages.info(request, "Filters aplied")
-        try:
-            year = int(request.GET.get('year__lt'))
-        except:
-            year = 0
-        if year == 0:
-            year = 2021
-
-        centrosName = []
-        centros = []
-        centro = ""
-        suma = 0
-        pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
-        for pac in pacientes:
-            if pac.center not in centrosName:
-                if pac.center.name == centro:
-                    suma += pac.cases
-                else:
-
-                    centrosName.append(centro)
-                    n = 'centro ' + centro
-                    co = {
-                        'nombre': n,
-                        'cases': suma,
-                        'cod': pac.center.code,
-                    }
-
-                    centros.append(co)
-
-                    centro = pac.center.name
-
-                    suma = 0
-            if len(centrosName) >= 20:
-                break
-
-        averages, cumulative = GetGraphicAverages(p.qs, diagnostic, weeks, year, 3)
-        print('graphic 1 and 3 Ok')
-        quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, 3)
-        print('graphic 2 Ok')
-        context = {
-            'averages': averages,
-            'quartiles': quartiles,
-            'cumulative': cumulative,
-            'diagnostic': diagnostic,
-            'filterP': p,
-            'google_api_key': settings.APY_KEY,
-            'centros': centros,
-        }
+        year = int(request.GET.get('year__lt'))
     except:
-        context = {}
+        year = 0
+    if year == 0:
+        year = 2021
+
+    centrosName = []
+    centros = []
+    centro = ""
+    suma = 0
+    pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
+    for pac in pacientes:
+        if pac.center not in centrosName:
+            if pac.center.name == centro:
+                suma += pac.cases
+            else:
+
+                centrosName.append(centro)
+                n = 'centro ' + centro
+                co = {
+                    'nombre': n,
+                    'cases': suma,
+                    'cod': pac.center.code,
+                }
+
+                centros.append(co)
+
+                centro = pac.center.name
+
+                suma = 0
+        if len(centrosName) >= 20:
+            break
+
+    averages, cumulative = GetGraphicAverages(p.qs, diagnostic, weeks, year, 3)
+    print('graphic 1 and 3 Ok')
+    quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, 3)
+    print('graphic 2 Ok')
+    context = {
+        'averages': averages,
+        'quartiles': quartiles,
+        'cumulative': cumulative,
+        'diagnostic': diagnostic,
+        'filterP': p,
+        'google_api_key': settings.APY_KEY,
+        'centros': centros,
+    }
+
+    #context = {}
     return render(request, 'diagnostic.html', context)
 
 @csrf_protect

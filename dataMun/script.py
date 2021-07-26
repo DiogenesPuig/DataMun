@@ -399,6 +399,7 @@ def insertWorkbook(spread_sheet):
     c.execute("insert into dataMun_week (week,year_id,creation) select distinct r.week, (SELECT dy.id from dataMun_year dy where dy.year = r.year),current_date from raw r;")
     c.execute("insert or ignore into dataMun_sex(name) values ('Male'),('Female');")
     c.execute("insert or ignore into dataMun_age (from_age,to_age) values(0,1),(1,5),(6,9),(10,14),(15,19),(20,54),(55,65),(65,214748367);")
+    """
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date,col5,(select dc.id from dataMun_center dc where r.col1 = dc.code ),(select dd.id from dataMun_diagnostic dd where r.col3 = dd.code),(select dw.id from dataMun_week dw where r.week = dw.week),(select ds.id from dataMun_sex ds where ds.name like 'M%'),(select da.id from dataMun_age da where da.from_age = 0) from raw r where col5 is not null and col5 not in (select cases from dataMun_diagnosticcases where sex_id=1 and age_id = (select da.id from dataMun_age da where da.from_age = 0));")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col6, (select dc.id from dataMun_center dc where raw.col1 = dc.code ),(select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code),(select dw.id from dataMun_week dw where raw.week = dw.week), (select ds.id from dataMun_sex ds where ds.name like 'F%'), (select da.id from dataMun_age da where da.from_age = 0) from raw where col6 is not null and col6 not in (select cases from dataMun_diagnosticcases where sex_id=2 and age_id=(select da.id from dataMun_age da where da.from_age = 0));")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date,col7, (select dc.id from dataMun_center dc where raw.col1 = dc.code ),	(select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code),	(select dw.id from dataMun_week dw where raw.week = dw.week),(select ds.id from dataMun_sex ds where ds.name like 'M%'),	(select da.id from dataMun_age da where da.from_age = 1) from raw where col7 is not null and col7 not in (select cases from dataMun_diagnosticcases where sex_id=1 and age_id=(select da.id from dataMun_age da where da.from_age = 1));")
@@ -415,7 +416,7 @@ def insertWorkbook(spread_sheet):
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col18, (select dc.id from dataMun_center dc where raw.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code), (select dw.id from dataMun_week dw where raw.week = dw.week), (select ds.id from dataMun_sex ds where ds.name like 'F%'), (select da.id from dataMun_age da where da.from_age = 55) from raw where col18 is not null and col18 not in (select cases from dataMun_diagnosticcases where sex_id=2 and age_id=(select da.id from dataMun_age da where da.from_age = 55)) ;")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col19, (select dc.id from dataMun_center dc where raw.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code), (select dw.id from dataMun_week dw where raw.week = dw.week), (select ds.id from dataMun_sex ds where ds.name like 'M%'), (select da.id from dataMun_age da where da.from_age = 65) from raw where col19 is not null and col19 not in (select cases from dataMun_diagnosticcases where sex_id=1 and age_id=(select da.id from dataMun_age da where da.from_age = 65)) ;")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col20, (select dc.id from dataMun_center dc where raw.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code), (select dw.id from dataMun_week dw where raw.week = dw.week), (select ds.id from dataMun_sex ds where ds.name like 'F%'), (select da.id from dataMun_age da where da.from_age = 65) from raw where col20 is not null and col20 not in (select cases from dataMun_diagnosticcases where sex_id=2 and age_id=(select da.id from dataMun_age da where da.from_age = 65)) ;")
-
+    """
     conn.commit()
     print(f"insert finish after {round(time() - start, 4)} seconds")
 
@@ -435,10 +436,15 @@ class DotsGraphicAverage():
 
 def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     t = [4.30, 3.18, 2.78, 2.57, 2.45, 2.36, 2.31, 2.26, 2.23, 2.20]
-    current_year = year
-    weeks_current_year = weeks.filter(year=current_year)
-    weeks = weeks.filter(year__lt=year)
 
+    current_year = Year.objects.get(year=year)
+    weeks_current_year = weeks.filter(year=current_year)
+    year_ob = Year.objects.filter(year__lt=year)
+    weeks = weeks.filter(year__in=year_ob)
+    print(weeks)
+
+    population = [0] * n_years
+    popu = 0
 
     #cases per diagnostic
     diagnostic_cases_w = diagnostic_cases
@@ -453,54 +459,68 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     cases_per_weeks = [0] * 52
 
     for i in range(len(averages)):
-        cases = 0
 
-        f = [0*n_years]
+        f = [0]*(n_years-1)
+
         year = 0
 
-        suma2 = 0
+        y = 0
         for w in range(len(weeks)):
+            #print(y)
             if weeks[w].week == i+1:
+                if y == 0:
+                    year = weeks[w].year
+                if year != weeks[w].year: # Esto no pasa nunca
+                    year = weeks[w].year
 
                 cases = 0
+                pop = weeks[w].year.population
+                population[y] = pop
                 for p in diagnostic_cases_w:
+
                     if p.week == weeks[w]:
+
                         cases += p.cases
 
-                f[w] = cases
+                f[y] = (cases / population[y] * 100000)
+                y+=1
 
-        averages[i] = np.mean(f)
+
+        averages[i] = np.log(np.average(f))
+        print(np.std(f))
+        #print(f,np.average(f),averages[i])
         standard_deviations[i] = np.std(f)
+        #print(standard_deviations[i],np.std(f))
 
-    """
-        if cases != 0:
+        """
+            if cases != 0:
+
+                average = cases / n_years
+
+                averages[i] = average
+                #calculation of standar deviation
+                standard_deviation = 0 
+                if len(f) != 0:
+                    for cases in f:
+                        suma2 += (cases-average)**2
+
+                    standard_deviation = math.sqrt(suma2 / len(f))
+                    standard_deviations[i] = standard_deviation 
+        """
             
-            average = cases / n_years
-            
-            averages[i] = average
-            #calculation of standar deviation
-            standard_deviation = 0 
-            if len(f) != 0:
-                for cases in f:
-                    suma2 += (cases-average)**2
-                
-                standard_deviation = math.sqrt(suma2 / len(f))
-                standard_deviations[i] = standard_deviation 
-            
-            
-            
-        
         cases = 0
         for week in weeks_current_year:
             if week.week == i+1:
                 dia = diagnostic_cases.filter(week=week)
                 
                 for d in dia:
-                    #print(d.cases)
-                    
-                    cases += d.cases  # se tiene que dividir por la poblacion_total multiplicar * 100000) y sumarle 1 ((d.cases/p_total * 100000 ) +1)
-        cases_per_weeks[i] = cases
-    """
+
+                    cases += d.cases
+            popu = week.year.population
+
+        cases_per_weeks[i] = np.log(cases/popu*100000)
+        #print(cases_per_weeks[i],cases)
+
 
 
     #array of class dots for draw the chart of averages
@@ -517,14 +537,36 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     for i in range(len(standard_deviations)):
         lower_rank = 0
         top_rank = 0
+        averages[i] = np.exp(averages[i])
+        averages[i] = averages[i] * popu / 100000
+
+        standard_deviations[i] = standard_deviations[i]
+        print(standard_deviations)
+        standard_deviations[i] = standard_deviations[i] * popu / 100000
+
+        #print(standard_deviations[i])
+        #print(np.exp(standard_deviations[i]))
+
+        if n_years != 0:
+            lower_rank = averages[i] - (t[n_years-3] * standard_deviations[i]/ math.sqrt(n_years))
+            top_rank = averages[i] + (t[n_years-3] * standard_deviations[i] / math.sqrt(n_years))
+            if lower_rank < 0:
+                lower_rank = 0
+
+        #averages[i] = np.exp(averages[i])
+        #lower_rank = np.exp(lower_rank)
+        #top_rank = np.exp(top_rank)
+
+        cases_per_weeks[i] = np.exp(cases_per_weeks[i])
+        cases_per_weeks[i] = cases_per_weeks[i] * popu / 100000
+
+        # Acumulative dots
         cases_acumulative += cases_per_weeks[i]
         average_cumulative += averages[i]
-        if n_years != 0:
-            lower_rank = averages[i] - (4.30 * standard_deviations[i] / math.sqrt(n_years))
-            top_rank = averages[i] + (4.30 * standard_deviations[i] / math.sqrt(n_years))
         if lower_rank >= 0:
             lower_rank_cumulative += lower_rank
         top_rank_cumulative += top_rank
+
 
 
         dots_average = DotsGraphicAverage(averages[i],i+1, lower_rank, top_rank,cases_per_weeks[i])
@@ -533,6 +575,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         dots_graphic_cumulative.append(dots_cumulative)
 
 
+    print(averages)
 
 
     return dots_graphic_averages, dots_graphic_cumulative
@@ -581,8 +624,6 @@ def GetAlert(diagnostic_cases, diagnostic, week,year):
     dia = diag_cases.filter(week=week)
 
     for d in dia:
-        #print(d.cases)
-
         cases += d.cases
 
     #array of class dots for draw the chart

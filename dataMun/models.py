@@ -37,10 +37,12 @@ class SpreadSheet(models.Model):
 class Year(models.Model):
     year = models.IntegerField()
     population = models.IntegerField(null=True)
+    def __str__(self):
+        return str(self.year)
 
 class Week(models.Model):
     week = models.IntegerField()
-    year = models.ForeignKey(Year,on_delete=models.CASCADE,null=False, related_name = "weeks")
+    year = models.ForeignKey(Year,on_delete=models.CASCADE,null=False, related_name = "weeks") # default=1329604
     spread_sheet = models.ForeignKey(SpreadSheet,on_delete=models.CASCADE,blank=True, null=True)
     creation = models.DateTimeField(auto_now_add=True)
     def __str__(self):

@@ -39,14 +39,7 @@ Diagnostic
                             <div id="graphic2" class="col s12"><canvas id="quartiles" ></canvas></div>
                             <div id="graphic3" class="col s12"><canvas id="cumulative" ></canvas></div>
                             
-                    
-                        
-            
 
-
-                    
-                        
-                        
                         <script>
                         var ctx = document.getElementById('averages').getContext('2d');
                         const labels = [{% for i in averages %}{{i.week}},{% endfor %}]
@@ -59,7 +52,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'Peligro',
+                            label: 'Alerta',
                             data: [{% for i in averages %}{{i.top_rank}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(212, 0, 0,0.4)',
@@ -68,7 +61,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'media',
+                            label: 'Seguridad',
                             data: [{% for i in averages %}{{i.average}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(255, 187, 0,0.4)',
@@ -78,7 +71,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'objetivo',
+                            label: 'Exito',
                             data: [{% for i in averages %}{{i.lower_rank}},{% endfor %}],
                             fill: {target: 'start' },
                             backgroundColor: 'rgba(161, 255, 194,0.4)',
@@ -120,7 +113,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'Cuartil 3',
+                            label: 'Alerta',
                             data: [{% for i in quartiles %}{{i.q3}},{% endfor %}],
                             fill: {target: '+1'},
                             
@@ -129,7 +122,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'Cuartil 2',
+                            label: 'Seguridad',
                             data: [{% for i in quartiles %}{{i.q2}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(255, 28, 64, 0.4)',
@@ -139,7 +132,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'Cuartil 1',
+                            label: 'Exito',
                             data: [{% for i in quartiles %}{{i.q1}},{% endfor %}],
                             fill: {target: 'start' },
                             backgroundColor: 'rgba(203, 148, 85, 0.4)',
@@ -182,7 +175,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'Peligro',
+                            label: 'Alerta',
                             data: [{% for i in cumulative %}{{i.top_rank}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(212, 0, 0,0.4)',
@@ -191,7 +184,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'media',
+                            label: 'Seguridad',
                             data: [{% for i in cumulative %}{{i.average}},{% endfor %}],
                             fill: {target: '+1'},
                             backgroundColor: 'rgba(255, 187, 0,0.4)',
@@ -201,7 +194,7 @@ Diagnostic
                             tension: 0.1
                         },
                         {
-                            label: 'objetivo',
+                            label: 'Exito',
                             data: [{% for i in cumulative %}{{i.lower_rank}},{% endfor %}],
                             fill: {target: 'start' },
                             backgroundColor: 'rgba(161, 255, 194,0.4)',
