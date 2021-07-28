@@ -166,14 +166,15 @@ def diagnosticView(request, cod_diagnostic):
         if len(centrosName) >= 20:
             break
 
-    averages, cumulative = GetGraphicAverages(p.qs, diagnostic, weeks, year, 3)
+    averages, cumulative_averages = GetGraphicAverages(p.qs, diagnostic, weeks, year, 3)
     print('graphic 1 and 3 Ok')
-    quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, 3)
+    quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, 3)
     print('graphic 2 Ok')
     context = {
         'averages': averages,
         'quartiles': quartiles,
-        'cumulative': cumulative,
+        'cumulative_averages': cumulative_averages,
+        'cumulative_quartiles': cumulative_quartiles,
         'diagnostic': diagnostic,
         'filterP': p,
         'google_api_key': settings.APY_KEY,

@@ -640,31 +640,27 @@ class DotsGraphicQuartile():
 
 
 def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
-    #idk la verdad
+
+    #idk la verdad <3
     current_year = Year.objects.get(year=year)
     weeks_current_year = weeks.filter(year=current_year)
     year_ob = Year.objects.filter(year__lt=year)
     weeks = weeks.filter(year__in=year_ob)
-    print(weeks)
-
 
     suma = 0
     if n_years % 2 != 0:
         suma = -1
-    q = [(n_years+suma)*1 / 4,(n_years+suma)*2 / 4,(n_years+suma)*3 / 4]
-    qs = [0] *3
 
+    qs = [0] * 3
+    qss = [0] * 3
 
     diagnost_cases = diagnostic_cases
 
-
     dots_graphic_quartiles = [ ]
+    dots_graphic_cumulative = [ ]
+    cases_per_week_acumulative = 0
     for o in range(52):
-        dots_q=[]
-
         cases_per_years = [0] * (n_years-1)
-
-
         cases = 0
         i = 0
         for week in range(len(weeks)):
@@ -676,29 +672,32 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
                 cases_per_years[i] = cases
                 i += 1
 
+        ##### Getting the quantiles ;)
+
         qs[0] = np.quantile(cases_per_years, 0.25)
         qs[1] = np.quantile(cases_per_years, 0.5)
         qs[2] = np.quantile(cases_per_years, 0.75)
-        print(qs)
-        print(cases_per_years)
+
+        qss[0] += np.quantile(cases_per_years, 0.25)
+        qss[1] += np.quantile(cases_per_years, 0.5)
+        qss[2] += np.quantile(cases_per_years, 0.75)
 
         cases_per_week = 0
 
+        ####loop to count the amount of cases in the current year
         for week in weeks_current_year:
             if week.week == o+1 :
                 dia = diagnost_cases.filter(week=week)
-
                 suma = 0
                 for d in dia:
                     cases_per_week += d.cases
-
-
-        #cases_per_week = suma
-        #print(cases_per_week)
+                cases_per_week_acumulative += cases_per_week
 
         dots = DotsGraphicQuartile(qs[0],qs[1],qs[2],cases_per_week,o+1)
+        dots_aculative = DotsGraphicQuartile(qss[0],qss[1],qss[2],cases_per_week_acumulative,o+1)
         dots_graphic_quartiles.append(dots)
+        dots_graphic_cumulative.append(dots_aculative)
 
-    return dots_graphic_quartiles
+    return dots_graphic_quartiles, dots_graphic_cumulative
 
 
