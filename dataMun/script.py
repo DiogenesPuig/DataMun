@@ -441,7 +441,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     weeks_current_year = weeks.filter(year=current_year)
     year_ob = Year.objects.filter(year__lt=year)
     weeks = weeks.filter(year__in=year_ob)
-    print(weeks)
 
     population = [0] * n_years
     popu = 0
@@ -487,10 +486,9 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
 
 
         averages[i] = np.log(np.average(f))
-        print(np.std(f))
-        #print(f,np.average(f),averages[i])
+
         standard_deviations[i] = np.std(f)
-        #print(standard_deviations[i],np.std(f))
+
 
         """
             if cases != 0:
@@ -519,7 +517,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
             popu = week.year.population
 
         cases_per_weeks[i] = np.log(cases/popu*100000)
-        #print(cases_per_weeks[i],cases)
+
 
 
 
@@ -541,11 +539,9 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         averages[i] = averages[i] * popu / 100000
 
         standard_deviations[i] = standard_deviations[i]
-        print(standard_deviations)
+
         standard_deviations[i] = standard_deviations[i] * popu / 100000
 
-        #print(standard_deviations[i])
-        #print(np.exp(standard_deviations[i]))
 
         if n_years != 0:
             lower_rank = averages[i] - (t[n_years-3] * standard_deviations[i]/ math.sqrt(n_years))
@@ -553,9 +549,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
             if lower_rank < 0:
                 lower_rank = 0
 
-        #averages[i] = np.exp(averages[i])
-        #lower_rank = np.exp(lower_rank)
-        #top_rank = np.exp(top_rank)
 
         cases_per_weeks[i] = np.exp(cases_per_weeks[i])
         cases_per_weeks[i] = cases_per_weeks[i] * popu / 100000
@@ -573,9 +566,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         dots_cumulative = DotsGraphicAverage(average_cumulative,i+1, lower_rank_cumulative, top_rank_cumulative,cases_acumulative)
         dots_graphic_averages.append(dots_average)
         dots_graphic_cumulative.append(dots_cumulative)
-
-
-    print(averages)
 
 
     return dots_graphic_averages, dots_graphic_cumulative
@@ -649,9 +639,10 @@ class DotsGraphicQuartile():
 
 def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     #idk la verdad
-    current_year = year
+    current_year = Year.objects.get(year=year)
     weeks_current_year = weeks.filter(year=current_year)
-    weeks = weeks.filter(year__lte=year-1)
+    year_ob = Year.objects.filter(year__lt=year)
+    weeks = weeks.filter(year__in=year_ob)
 
 
 
@@ -659,6 +650,7 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     if n_years % 2 != 0:
         suma = -1
     q = [(n_years+suma)*1 / 4,(n_years+suma)*2 / 4,(n_years+suma)*3 / 4]
+    qs = [0] *3
 
 
     diagnost_cases = diagnostic_cases
@@ -668,7 +660,8 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     for o in range(52):
         dots_q=[]
 
-        cases_per_years = [0.0] * (n_years)
+        cases_per_years = [0.0] * (n_years-1)
+
         for i in range(len(cases_per_years)):
 
             cases = 0
@@ -686,6 +679,12 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
             if cases != 0:
                 cases_per_years[i] = float(cases)
 
+        qs[0] = np.quantile(cases_per_years, 0.25)
+        qs[1] = np.quantile(cases_per_years, 0.5)
+        qs[2] = np.quantile(cases_per_years, 0.75)
+        #print(cases_per_years)
+        #print(qs)
+
 
 
         n = len(  cases_per_years )
@@ -698,7 +697,7 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
                     cases_per_years[j + 1] = l
 
         for r in range(len(q)):
-
+            #aca agregar los cuartiles
             dots_q.append(cases_per_years[int(q[r])])
 
 
@@ -709,12 +708,15 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
             if week.week == o+1 :
                 dia = diagnost_cases.filter(week=week)
 
+                suma = 0
                 for d in dia:
+                    print(d.cases)
+                    suma += d.cases
 
-                    cases_per_week += d.cases
+        cases_per_week = suma
+        #print(cases_per_week)
 
-
-        dots = DotsGraphicQuartile(dots_q[0],dots_q[0]+dots_q[1],dots_q[0]+dots_q[1]+dots_q[2],cases_per_week,o+1)
+        dots = DotsGraphicQuartile(qs[0],qs[1],qs[2],cases_per_week,o+1)
         dots_graphic_quartiles.append(dots)
 
     return dots_graphic_quartiles
