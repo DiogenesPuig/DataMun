@@ -635,7 +635,8 @@ class DotsGraphicQuartile():
         self.q2 = q2
         self.q3 = q3
         self.cases = cases
-        self.week  = week
+        self.week = week
+
 
 def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     #idk la verdad
@@ -643,7 +644,7 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     weeks_current_year = weeks.filter(year=current_year)
     year_ob = Year.objects.filter(year__lt=year)
     weeks = weeks.filter(year__in=year_ob)
-
+    print(weeks)
 
 
     suma = 0
@@ -660,49 +661,27 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     for o in range(52):
         dots_q=[]
 
-        cases_per_years = [0.0] * (n_years-1)
-
-        for i in range(len(cases_per_years)):
-
-            cases = 0
+        cases_per_years = [0] * (n_years-1)
 
 
-            for week in weeks:
-                if week.week == o+1:
-                    if week.year != year-(i+1):
-                        cases = 0
-                        for p in diagnostic_cases:
-                            if p.week == week:
-                                cases += p.cases
-
-
-            if cases != 0:
-                cases_per_years[i] = float(cases)
+        cases = 0
+        i = 0
+        for week in range(len(weeks)):
+            if weeks[week].week == o+1:
+                cases = 0
+                for p in diagnostic_cases:
+                    if p.week == weeks[week]:
+                        cases += p.cases
+                cases_per_years[i] = cases
+                i += 1
 
         qs[0] = np.quantile(cases_per_years, 0.25)
         qs[1] = np.quantile(cases_per_years, 0.5)
         qs[2] = np.quantile(cases_per_years, 0.75)
-        #print(cases_per_years)
-        #print(qs)
-
-
-
-        n = len(  cases_per_years )
-        for i in range(n-1): # range(n) also work but outer loop will repeat one time more than
-            for j in range(0, n-i-1):
-                if cases_per_years[j] <  cases_per_years[j + 1] :
-
-                    l = cases_per_years[j]
-                    cases_per_years[j] = cases_per_years[j + 1]
-                    cases_per_years[j + 1] = l
-
-        for r in range(len(q)):
-            #aca agregar los cuartiles
-            dots_q.append(cases_per_years[int(q[r])])
-
+        print(qs)
+        print(cases_per_years)
 
         cases_per_week = 0
-
 
         for week in weeks_current_year:
             if week.week == o+1 :
@@ -710,10 +689,10 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
 
                 suma = 0
                 for d in dia:
-                    print(d.cases)
-                    suma += d.cases
+                    cases_per_week += d.cases
 
-        cases_per_week = suma
+
+        #cases_per_week = suma
         #print(cases_per_week)
 
         dots = DotsGraphicQuartile(qs[0],qs[1],qs[2],cases_per_week,o+1)
