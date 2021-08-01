@@ -11,7 +11,6 @@ urlpatterns = [
     path('perfil/', perfilView, name="perfil"),
     path('uploadFile/', uploadFileView, name="uploadFile"),
     path('diagnostics/', diagnosticsView, name="diagnostics"),
-    path('diagnostics/search/', search_results, name="search"),
     path('diagnostics/api/search_diagnostic/', DiagnosticsView.as_view()),
     path('centers/api/search_center/', CenterView.as_view()),
     path('centers/', centersView, name="centers"),

@@ -90,12 +90,15 @@ def diagnosticsView(request):
     try:
 
         year = datetime.datetime.now().year
+        year_obj = Year.objects.get(year=year)
 
-        weeks = Week.objects.filter(year=year)
+        weeks = Week.objects.filter(year=year_obj).order_by('-week')
         max_week = weeks[0]
-        for week in weeks:
+        max_week = Week.objects.get(week=max_week.week,year=year_obj)
+        print(max_week.week)
+        """for week in weeks:
             if week.week > max_week.week:
-                max_week = week
+                max_week = week"""
 
         diagnostics = Diagnostic.objects.all()
         diagnostic_cases = DiagnosticCases.objects.all()
@@ -103,9 +106,9 @@ def diagnosticsView(request):
         diagn_cod = []
 
         for diagnostic in diagnostics:
-            if len(alerts) != 100:
+            if len(alerts) != 10:
                 dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
-                if dots.cases >= dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
+                if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
                     if diagnostic.code not in diagn_cod:
                         alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
                         diagn_cod.append(diagnostic.code)
@@ -183,29 +186,6 @@ def diagnosticView(request, cod_diagnostic):
 
     #context = {}
     return render(request, 'diagnostic.html', context)
-
-@csrf_protect
-def search_results(request):
-    if request.is_ajax():
-        res = None
-        diagnostic = request.POST.get('diagnostic')
-        qs = Diagnostic.objects.filter(name__icontains=diagnostic)
-        if len(qs) > 0 and len(diagnostic) > 0:
-            data = []
-            for position in qs:
-                item ={
-                    'pk':position.pk,
-                    'name':position.name,
-                    'code':position.code
-                }
-                data.append(item)
-                res = data
-        else:
-            res = "Sin resultados..."
-
-        return JsonResponse({'data': res})
-    return JsonResponse({})
-
 
 @user_passes_test(lambda u: u.is_staff)
 def uploadFileView(request):

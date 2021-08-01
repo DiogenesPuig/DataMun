@@ -21,21 +21,12 @@ Diagnosticos
         <div class="col s12 s8 l8">
             <div class="card-content ">
                 <span class="card-title">Buscar Diagnosticos</span>
-                <div class="input-field col s12 ">
-                    <form id="search-form" autocomplete="off">
-                        {% csrf_token %}
-                        <input type="text" id="search-input" class="p-3 w-50 search" placeholder="Buscar una Enfermedad">
-                    </form>
-                    <div id="results-box" class="results-card z-depth-2 not-visible">
-                    </div>
-                </div>
-                <!--
-                <p>Arriba da urls para redireccionar abajo no</p>
+                
 
 
                 <div class="row">
                     <div class="input-field col s12 ">
-                        <input  type="search" class="autocomplete" id="name"  placeholder="Search">
+                        <input  type="search" class="autocomplete" id="name"  placeholder="Search" autocomplete="off">
                         <i id="btn_search" onclick="filterDiagnostic()" class="material-icons center">search</i>
 
                     </div>
@@ -54,7 +45,7 @@ Diagnosticos
 
                     </ul>
                 </div>
-                --->
+                
             </div>
         </div>
 

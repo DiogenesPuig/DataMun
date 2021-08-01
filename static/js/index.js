@@ -56,10 +56,10 @@ function filter(end_point,callback) {
 
 function addDiagnostic(code,name){
     
-    var li = "<li class='collection-item'><div class='row'><div class='col s2'><a href='/code'>"
-    var end_li= "</div></div></li>"
+    var li = "<li class='collection-item'><div class='row'><div class='col s2'>"
+    var end_li= "</a></div></div></li>"
     
-    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'>name</a>" + end_li;
+    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'><a href='/diagnostic/" + code +  "'>" + name + end_li;
 
     
     
