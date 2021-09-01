@@ -195,15 +195,15 @@ class DotsGraphicAverage():
 
 
 def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
-    t = [4.30, 3.18, 2.78, 2.57, 2.45, 2.36, 2.31, 2.26, 2.23, 2.20]
+    t = 1.96
 
     current_year = Year.objects.get(year=year)
     weeks_current_year = weeks.filter(year=current_year)
     year_ob = Year.objects.filter(year__lt=year)
     weeks = weeks.filter(year__in=year_ob)
 
-    population = [0] * n_years
-    popu = 0
+    #population = [0] * n_years
+    #popu = 0
 
     #cases per diagnostic
     diagnostic_cases_w = diagnostic_cases
@@ -233,19 +233,19 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                     year = weeks[w].year
 
                 cases = 0
-                pop = weeks[w].year.population
-                population[y] = pop
+                #pop = weeks[w].year.population
+                #population[y] = pop
                 for p in diagnostic_cases_w:
 
                     if p.week == weeks[w]:
 
                         cases += p.cases
 
-                f[y] = (cases / population[y] * 100000)
+                f[y] = (cases) #borrar
                 y+=1
 
 
-        averages[i] = np.log(np.average(f))
+        averages[i] = np.average(f) #borrar
 
         standard_deviations[i] = np.std(f)
 
@@ -274,11 +274,9 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 for d in dia:
 
                     cases += d.cases
-            popu = week.year.population
+            #popu = week.year.population
 
-        cases_per_weeks[i] = np.log(cases/popu*100000)
-
-
+        cases_per_weeks[i] = cases
 
 
     #array of class dots for draw the chart of averages
@@ -295,23 +293,18 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     for i in range(len(standard_deviations)):
         lower_rank = 0
         top_rank = 0
-        averages[i] = np.exp(averages[i])
-        averages[i] = averages[i] * popu / 100000
 
+        averages[i] = averages[i]
         standard_deviations[i] = standard_deviations[i]
 
-        standard_deviations[i] = standard_deviations[i] * popu / 100000
-
-
         if n_years != 0:
-            lower_rank = averages[i] - (t[n_years-3] * standard_deviations[i]/ math.sqrt(n_years))
-            top_rank = averages[i] + (t[n_years-3] * standard_deviations[i] / math.sqrt(n_years))
+            lower_rank = averages[i] - (t * standard_deviations[i]/ math.sqrt(n_years))
+            top_rank = averages[i] + (t * standard_deviations[i] / math.sqrt(n_years))
             if lower_rank < 0:
                 lower_rank = 0
 
 
-        cases_per_weeks[i] = np.exp(cases_per_weeks[i])
-        cases_per_weeks[i] = cases_per_weeks[i] * popu / 100000
+        cases_per_weeks[i] = cases_per_weeks[i]
 
         # Acumulative dots
         cases_acumulative += cases_per_weeks[i]
@@ -419,6 +412,7 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     dots_graphic_quartiles = [ ]
     dots_graphic_cumulative = [ ]
     cases_per_week_acumulative = 0
+
     for o in range(52):
         cases_per_years = [0] * (n_years-1)
         cases = 0

@@ -9,6 +9,7 @@ class DiagnosticCasesFilter(django_filters.FilterSet):
     age = django_filters.ModelMultipleChoiceFilter(queryset=Age.objects.all())
     sex = django_filters.ModelMultipleChoiceFilter(queryset=Sex.objects.all())
     week = django_filters.ModelMultipleChoiceFilter(queryset=Week.objects.filter(year=datetime.datetime.now().year))
+    #year = django_filters.ModelMultipleChoiceFilter(queryset=Week.objects.filter(year=Year.Object.filter(datetime.datetime.now().year)))
     center = django_filters.ModelMultipleChoiceFilter(queryset=Center.objects.all())
     
 
