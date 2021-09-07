@@ -24,10 +24,13 @@ from .serializers import *
 
 @login_required()
 def perfilView(request):
+    """This view function is used to render profile"""
     return render(request, "perfil.html")
 
 
 def logoutView(request):
+    """This view function is used to redirect to home when you
+    logout """
     if request.user.is_authenticated:
         logout(request)
         return redirect("home")
@@ -35,6 +38,7 @@ def logoutView(request):
 
 @unauthenticated_user
 def loginView(request):
+    """This view function is used to login in the page"""
     context = {}
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -57,6 +61,7 @@ def loginView(request):
 
 @unauthenticated_user
 def registerView(request):
+    """This view function is used to create a new profile"""
     form = CreateUserForm()
     if request.method == "POST":
         form = CreateUserForm(request.POST)
@@ -73,6 +78,7 @@ def registerView(request):
 
 
 def homeView(request):
+    """This view function render Home"""
     context = {
 
     }
@@ -87,6 +93,9 @@ class PaceintePorDiagnostico():
 
 @user_passes_test(lambda u: u.is_staff)
 def diagnosticsView(request):
+    """
+    This view function show us all the diagnostics and alerts(if it exists)
+    """
     try:
 
         year = datetime.datetime.now().year
@@ -125,8 +134,11 @@ def diagnosticsView(request):
 
 
 @user_passes_test(lambda u: u.is_staff)
-######## aca
 def diagnosticView(request, cod_diagnostic):
+    """
+    This view function show us the information of each diagnostic with
+    his own charts and it have filters if you need to use
+    """
     diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
     diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
 
@@ -189,6 +201,11 @@ def diagnosticView(request, cod_diagnostic):
 
 @user_passes_test(lambda u: u.is_staff)
 def uploadFileView(request):
+    """
+    This view function is used to upload a xls file to later
+    read and process the data in order to load the information to the
+    database
+    """
     form = CreateFileForm()
     if request.method == "POST":  # If the form has been submitted...
 
@@ -198,23 +215,6 @@ def uploadFileView(request):
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
             success = insertWorkbook(file)
-
-            """
-            if len(success) != 1:
-                file = SpreadSheet.objects.get(pk=file.id)
-                file.delete()
-                for error in success:
-                    if error[0] == 1:
-                        form._errors["tabla"] = ErrorList([u" El archivo subido debe ser excel."])
-                    if error[0] == 2:
-
-                        form._errors["tabla"] = ErrorList([u" Revisa que el titulo de la hoja este correcto con su año y semana"])
-
-                    context = {
-                        'form':form
-                    }
-
-                return render(request, 'uploadFile.html',context)"""
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
             return redirect('diagnostics')  ## redirects to aliquot page ordered by the most recent
 
@@ -230,11 +230,13 @@ def uploadFileView(request):
 
 
 def centersView(request):
+    """This view function is empty(for now)"""
     return render(request, 'centers.html')
 
 
 # django rest_fremework views
 class CenterView(generics.ListAPIView):
+
     queryset = Center.objects.all()
     serializer_class = CenterSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
