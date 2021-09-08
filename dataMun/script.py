@@ -116,6 +116,10 @@ def insertSQL(conn):
     return c
 
 def insertWorkbook(spread_sheet):
+    """
+    Take and process the information and then this is
+    loaded to the databases
+    """
     start_total = time()
     #conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
     conn = sqlite3.connect('db.sqlite3')
@@ -159,7 +163,6 @@ def insertWorkbook(spread_sheet):
     c.execute("insert into dataMun_week (week,year_id,creation) select distinct r.week, (SELECT dy.id from dataMun_year dy where dy.year = r.year),current_date from raw r;")
     c.execute("insert or ignore into dataMun_sex(name) values ('Male'),('Female');")
     c.execute("insert or ignore into dataMun_age (from_age,to_age) values(0,1),(1,5),(6,9),(10,14),(15,19),(20,54),(55,65),(65,214748367);")
-    
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col5, (select dc.id from dataMun_center dc where r.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where r.col3 = dd.code), (select dw.id from dataMun_week dw where r.week = dw.week and dw.year_id = (SELECT dy.id from dataMun_year dy where dy.year = r.year)) as w, (select ds.id from dataMun_sex ds where ds.name like 'M%'), (select da.id from dataMun_age da where da.from_age = 0) from raw r where col5 is not null and (col5 not in (select cases from dataMun_diagnosticcases where sex_id=1 and age_id = (select da.id from dataMun_age da where da.from_age = 0)) or w not in (select week_id from dataMun_diagnosticcases where sex_id=1 and age_id = (select da.id from dataMun_age da where da.from_age = 0)));")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col6, (select dc.id from dataMun_center dc where raw.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code), (select dw.id from dataMun_week dw where raw.week = dw.week and dw.year_id = (SELECT dy.id from dataMun_year dy where dy.year = raw.year)) as w, (select ds.id from dataMun_sex ds where ds.name like 'F%'), (select da.id from dataMun_age da where da.from_age = 0) from raw where col6 is not null and (col6 not in (select cases from dataMun_diagnosticcases where sex_id=2 and age_id=(select da.id from dataMun_age da where da.from_age = 0)) or w not in (select week_id from dataMun_diagnosticcases where sex_id=2 and age_id=(select da.id from dataMun_age da where da.from_age = 0)));")
     c.execute("insert into dataMun_diagnosticcases (creation, cases, center_id, diagnostic_id, week_id, sex_id, age_id) select current_date, col7, (select dc.id from dataMun_center dc where raw.col1 = dc.code ), (select dd.id from dataMun_diagnostic dd where raw.col3 = dd.code), (select dw.id from dataMun_week dw where raw.week = dw.week and dw.year_id = (SELECT dy.id from dataMun_year dy where dy.year = raw.year)) as w, (select ds.id from dataMun_sex ds where ds.name like 'M%'), (select da.id from dataMun_age da where da.from_age = 1) from raw where col7 is not null and (col7 not in (select cases from dataMun_diagnosticcases where sex_id=1 and age_id=(select da.id from dataMun_age da where da.from_age = 1)) or w not in (select week_id from dataMun_diagnosticcases where sex_id=1 and age_id=(select da.id from dataMun_age da where da.from_age = 1)));")
@@ -185,6 +188,9 @@ def insertWorkbook(spread_sheet):
     print(f"total finished after {round(time()-start_total,4)} seconds")
 
 class DotsGraphicAverage():
+    """
+    Take dots of graphicAverage
+    """
     def __init__(self, average, week, lower_rank, top_rank,cases):
         self.average = average
         self.week = week
@@ -195,7 +201,11 @@ class DotsGraphicAverage():
 
 
 def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
-    t = [4.30, 3.18, 2.78, 2.57, 2.45, 2.36, 2.31, 2.26, 2.23, 2.20]
+    """
+    Take the information of a specific diagnostic to calculate the dots of it
+    and then return all the dots in order to make the chart
+    """
+    t = 1.96
 
     current_year = Year.objects.get(year=year)
     weeks_current_year = weeks.filter(year=current_year)
@@ -236,13 +246,13 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                     for p in diagnostic_cases_w:
 
                         if p.week == weeks[w]:
-
+    
                             cases += p.cases
 
                     f[y_idx ] = (cases / pop * 100000)
                     y_idx +=1
 
-        averages[i] = np.log(np.average(f))
+        averages[i] = np.average(f) #borrar
 
         standard_deviations[i] = np.std(f)
             
@@ -259,6 +269,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         cases_per_weeks[i] = np.log(cases / popu * 100000)
 
 
+        cases_per_weeks[i] = cases
 
 
     #array of class dots for draw the chart of averages
@@ -278,14 +289,15 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         averages[i] = np.exp(averages[i])
         averages[i] = averages[i] * current_year.population / 100000
 
+        averages[i] = averages[i]
         standard_deviations[i] = standard_deviations[i]
 
         standard_deviations[i] = standard_deviations[i] * current_year.population / 100000
 
 
         if n_years != 0:
-            lower_rank = averages[i] - (t[n_years-3] * standard_deviations[i]/ math.sqrt(n_years))
-            top_rank = averages[i] + (t[n_years-3] * standard_deviations[i] / math.sqrt(n_years))
+            lower_rank = averages[i] - (t * standard_deviations[i]/ math.sqrt(n_years))
+            top_rank = averages[i] + (t * standard_deviations[i] / math.sqrt(n_years))
             if lower_rank < 0:
                 lower_rank = 0
 
@@ -312,8 +324,11 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
 
 
 def GetAlert(diagnostic_cases, diagnostic, week,year):
-
-    #cases per diagnostic
+    """
+    This function take all diagnostic_cases, diagnostic,week and year
+    existing in the databases. Later compare all the old data with the newest
+    and alerts the user which are in 'alerta'
+    """
 
     diag_cases = diagnostic_cases.filter(diagnostic=diagnostic)
     average = 0
@@ -371,6 +386,9 @@ def GetAlert(diagnostic_cases, diagnostic, week,year):
 
 
 class DotsGraphicQuartile():
+    """
+    Take dots of graphicQuartile
+    """
     def __init__(self,q1,q2,q3,cases,week):
         self.q1 = q1
         self.q2 = q2
@@ -380,8 +398,10 @@ class DotsGraphicQuartile():
 
 
 def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
-
-    #idk la verdad <3
+    """
+    Take the information of a specific diagnostic to calculate the dots of it
+    and then return all the dots in order to make the chart
+    """
     current_year = Year.objects.get(year=year)
     weeks_current_year = weeks.filter(year=current_year)
     year_ob = Year.objects.filter(year__lt=year)
@@ -399,6 +419,7 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     dots_graphic_quartiles = [ ]
     dots_graphic_cumulative = [ ]
     cases_per_week_acumulative = 0
+
     for o in range(52):
         cases_per_years = [0] * (n_years)
         cases = 0

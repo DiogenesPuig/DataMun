@@ -34,16 +34,20 @@ def homeView(request):
 
 @login_required()
 def perfilView(request):
+    """This view function is used to render profile"""
     return render(request, "perfil.html")
 
 
 def logoutView(request):
+    """This view function is used to redirect to home when you
+    logout """
     if request.user.is_authenticated:
         logout(request)
         return redirect("home")
 
 @unauthenticated_user
 def loginView(request):
+    """This view function is used to login in the page"""
     context = {}
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -65,6 +69,7 @@ def loginView(request):
 
 @unauthenticated_user
 def registerView(request):
+    """This view function is used to create a new profile"""
     form = CreateUserForm()
     if request.method == "POST":
         form = CreateUserForm(request.POST)
@@ -79,6 +84,15 @@ def registerView(request):
     }
     return render(request, 'register.html', context)
 
+
+def homeView(request):
+    """This view function render Home"""
+    context = {
+
+    }
+    return render(request, 'home.html', )
+
+
 class PaceintePorDiagnostico():
     def __init__(self, cantPacientePorDiagnostico, diagnostico):
         self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
@@ -86,7 +100,9 @@ class PaceintePorDiagnostico():
 
 @user_passes_test(lambda u: u.is_staff)
 def diagnosticsView(request):
-    
+    """
+    This view function show us all the diagnostics and alerts(if it exists)
+    """
     try:
         year = datetime.datetime.now().year
         year_obj = Year.objects.get(year=year)
@@ -127,6 +143,10 @@ def diagnosticsView(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def diagnosticView(request, cod_diagnostic):
+    """
+    This view function show us the information of each diagnostic with
+    his own charts and it have filters if you need to use
+    """
     diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
     diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
 
@@ -198,6 +218,11 @@ def diagnosticView(request, cod_diagnostic):
 
 @user_passes_test(lambda u: u.is_staff)
 def uploadFileView(request):
+    """
+    This view function is used to upload a xls file to later
+    read and process the data in order to load the information to the
+    database
+    """
     form = CreateFileForm()
     if request.method == "POST":  # If the form has been submitted...
 
@@ -219,6 +244,7 @@ def uploadFileView(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def centersView(request):
+    """This view function is empty(for now)"""
     return render(request, 'centers.html')
 
 @user_passes_test(lambda u: u.is_staff)
