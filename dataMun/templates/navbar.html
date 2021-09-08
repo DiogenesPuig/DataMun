@@ -4,6 +4,7 @@
 {% url 'register' as register_url %}
 {% url 'logout' as logout_url %}
 {% url 'uploadFile' as uploadFile_url %}
+{% url 'centers' as centers_url %}
 {% url 'diagnostics' as diagnostics_url %}
 {% url 'perfil' as perfil_url %}
 <ul id="dropdown1" class="dropdown-content">
@@ -34,6 +35,7 @@
 		<ul class="right hide-on-med-and-down">
 			<li><a  class="black-text" href="{{home_url}}"><i class="material-icons left">home</i>Inicio</a></li>
 			<li><a  class="black-text" href=""><i class="material-icons left">book</i>Somos</a></li>
+			<li><a  class="black-text" href="{{centers_url}}"><i class="material-icons left">local_hospital</i>Centros</a></li>
 			<li><a  class="black-text" href="{{diagnostics_url}}"><i class="material-icons left">colorize</i>Diagnosticos</a></li>
 			<li><a  class="black-text" href="{{uploadFile_url}}"><i class="material-icons left">attach_file</i>Subir Archivo</a></li>
 		    <li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown2"><i class="material-icons right">arrow_drop_down</i>Cuenta                .</a></li>
@@ -51,6 +53,7 @@
 <ul id="slide-out" class="sidenav">
 	<li><a  class="black-text" href="{{home_url}}"><i class="material-icons left">home</i>Inicio</a></li>
 	<li><a  class="black-text" href=""><i class="material-icons left">book</i>Somos</a></li>
+	<li><a  class="black-text" href="{{centers_url}}"><i class="material-icons left">local_hospital</i>Centros</a></li>
 	<li><a  class="black-text" href="{{diagnostics_url}}"><i class="material-icons left">colorize</i>Diagnosticos</a></li>
 	<li><a  class="black-text" href="{{uploadFile_url}}"><i class="material-icons left">attach_file</i>Subir Archivo</a></li>
 	<li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown1"><i class="material-icons right">arrow_drop_down</i>Cuenta                 .</a></li>

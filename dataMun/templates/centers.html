@@ -26,11 +26,14 @@ Centers
                                 <div class="col s2">
                                     Codigo
                                 </div>
-                                <div class="col s5">
+                                <div class="col s4">
                                     Centro
                                 </div>
-                                <div class="col s5">
-                                    Coordenadas
+                                <div class="col s2">
+                                    Latitud
+                                </div>
+                                <div class="col s2">
+                                    Longitud
                                 </div>
                             </div>
                         <div class="row" style="overflow: auto;height: 300px;">
@@ -39,6 +42,44 @@ Centers
                                 
                             </ul>
                         </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded',function () {
+                                filterCenter()
+
+                                var input = document.getElementById("name");
+                                // Execute a function when the user releases a key on the keyboard
+                                input.addEventListener("keyup", function(event) {
+                                // Number 13 is the "Enter" key on the keyboard
+                                if (event.keyCode === 13) {
+                                    // Cancel the default action, if needed
+                                    event.preventDefault();
+                                    // Trigger the button element with a click
+                                    document.getElementById("btn_search").click();
+                                }
+                                }); 
+                                
+                                var end_point = "/api/centers/"
+                                
+                                filter(end_point,function(data){
+                                    var elems = document.querySelectorAll('.autocomplete');
+                                    
+                                    var data_qs = "{"
+                                    for (i in data){
+                                        
+                                        data_qs += "\""+data[i].name + "\":null,"
+                                    }
+
+                                    data_qs += "}";
+                                    data_qs = data_qs.replace(",}","}")
+                                    
+                                    
+                                    var obj = JSON.parse(data_qs)
+                                    
+                                    var instances = M.Autocomplete.init(elems, {data: obj,onAutocomplete:function(){filterCenter()} });
+                                });
+                                
+                            });
+                        </script>
                     
                     </div>
                     

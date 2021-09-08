@@ -45,6 +45,44 @@ Diagnosticos
 
                     </ul>
                 </div>
+                <script>
+
+                    document.addEventListener('DOMContentLoaded',function () {
+                        filterDiagnostic()
+                        var input = document.getElementById("name");
+                        // Execute a function when the user releases a key on the keyboard
+                        input.addEventListener("keyup", function(event) {
+                        // Number 13 is the "Enter" key on the keyboard
+                        if (event.keyCode === 13) {
+                            // Cancel the default action, if needed
+                            event.preventDefault();
+                            // Trigger the button element with a click
+                            document.getElementById("btn_search").click();
+                        }
+                        }); 
+                        var end_point = "/api/diagnostics/"
+                        
+                        filter(end_point,function(data){
+                            var elems = document.querySelectorAll('.autocomplete');
+                            
+                            var data_qs = "{"
+                            for (i in data){
+                                
+                                data_qs += "\""+data[i].name.replace("            ","").replace("\"","") + "\":null,\n"
+                            }
+                            
+                            data_qs += "}";
+                            data_qs = data_qs.replace(",\n}","}")
+                            
+                            
+                            
+                            var obj = JSON.parse(data_qs)
+                            
+                            var instances = M.Autocomplete.init(elems, {data: obj,onAutocomplete:function(){filterDiagnostic()} });
+                        });
+                        
+                    });
+                </script>
                 
             </div>
         </div>
@@ -52,7 +90,7 @@ Diagnosticos
 
         <div class="col s12 s4 l4" >
             <div class="row center" >
-            <h5>Alertas de la semana {{ max_week.week}}</h5>
+            <h5>Alertas de la semana {{ max_week.week}} del año {{ max_week.year.year}}</h5>
             </div>
 
             {% for i in alerts %}

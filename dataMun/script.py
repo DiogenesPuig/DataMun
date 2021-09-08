@@ -155,7 +155,7 @@ def insertWorkbook(spread_sheet):
     c.execute("insert into dataMun_zone (code) select DISTINCT col0 from raw where col0 not in (select code from dataMun_zone);")
     c.execute("insert into dataMun_center (code,name,zone_id) select DISTINCT col1, col2, (select dz.id from dataMun_zone dz where col0 = dz.code) from raw where col1 not in (select code from dataMun_center);")
     c.execute("insert into dataMun_diagnostic (code,name) select DISTINCT col3, col4 from raw where col3 not in (select code from dataMun_diagnostic);")
-    c.execute("insert into dataMun_year (year) select distinct r.year from raw r where r.year not in(select dy.year from dataMun_year dy);")
+    c.execute("insert into dataMun_year (year,population) select distinct r.year,1 from raw r where r.year not in(select dy.year from dataMun_year dy);")
     c.execute("insert into dataMun_week (week,year_id,creation) select distinct r.week, (SELECT dy.id from dataMun_year dy where dy.year = r.year),current_date from raw r;")
     c.execute("insert or ignore into dataMun_sex(name) values ('Male'),('Female');")
     c.execute("insert or ignore into dataMun_age (from_age,to_age) values(0,1),(1,5),(6,9),(10,14),(15,19),(20,54),(55,65),(65,214748367);")
@@ -202,7 +202,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     year_ob = Year.objects.filter(year__lt=year)
     weeks = weeks.filter(year__in=year_ob)
 
-    population = [0] * n_years
     popu = 0
 
     #cases per diagnostic
@@ -219,52 +218,33 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
 
     for i in range(len(averages)):
 
-        f = [0]*(n_years-1)
+        f = [0]*(n_years)
+        
 
         year = 0
 
-        y = 0
+        y_idx = 0
         for w in range(len(weeks)):
             #print(y)
             if weeks[w].week == i+1:
-                if y == 0:
-                    year = weeks[w].year
+                
                 if year != weeks[w].year: # Esto no pasa nunca
                     year = weeks[w].year
+                    cases = 0
+                    pop = weeks[w].year.population
+                    
+                    for p in diagnostic_cases_w:
 
-                cases = 0
-                pop = weeks[w].year.population
-                population[y] = pop
-                for p in diagnostic_cases_w:
+                        if p.week == weeks[w]:
 
-                    if p.week == weeks[w]:
+                            cases += p.cases
 
-                        cases += p.cases
-
-                f[y] = (cases / population[y] * 100000)
-                y+=1
-
+                    f[y_idx ] = (cases / pop * 100000)
+                    y_idx +=1
 
         averages[i] = np.log(np.average(f))
 
         standard_deviations[i] = np.std(f)
-
-
-        """
-            if cases != 0:
-
-                average = cases / n_years
-
-                averages[i] = average
-                #calculation of standar deviation
-                standard_deviation = 0 
-                if len(f) != 0:
-                    for cases in f:
-                        suma2 += (cases-average)**2
-
-                    standard_deviation = math.sqrt(suma2 / len(f))
-                    standard_deviations[i] = standard_deviation 
-        """
             
         cases = 0
         for week in weeks_current_year:
@@ -276,7 +256,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                     cases += d.cases
             popu = week.year.population
 
-        cases_per_weeks[i] = np.log(cases/popu*100000)
+        cases_per_weeks[i] = np.log(cases / popu * 100000)
 
 
 
@@ -296,11 +276,11 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
         lower_rank = 0
         top_rank = 0
         averages[i] = np.exp(averages[i])
-        averages[i] = averages[i] * popu / 100000
+        averages[i] = averages[i] * current_year.population / 100000
 
         standard_deviations[i] = standard_deviations[i]
 
-        standard_deviations[i] = standard_deviations[i] * popu / 100000
+        standard_deviations[i] = standard_deviations[i] * current_year.population / 100000
 
 
         if n_years != 0:
@@ -311,7 +291,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
 
 
         cases_per_weeks[i] = np.exp(cases_per_weeks[i])
-        cases_per_weeks[i] = cases_per_weeks[i] * popu / 100000
+        cases_per_weeks[i] = cases_per_weeks[i] * current_year.population / 100000
 
         # Acumulative dots
         cases_acumulative += cases_per_weeks[i]
@@ -420,28 +400,30 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     dots_graphic_cumulative = [ ]
     cases_per_week_acumulative = 0
     for o in range(52):
-        cases_per_years = [0] * (n_years-1)
+        cases_per_years = [0] * (n_years)
         cases = 0
         i = 0
-        for week in range(len(weeks)):
-            if weeks[week].week == o+1:
-                cases = 0
-                for p in diagnostic_cases:
-                    if p.week == weeks[week]:
-                        cases += p.cases
-                cases_per_years[i] = cases
-                i += 1
+        year  = 0 
+        for week_idx in range(len(weeks)):
+            if weeks[week_idx].week == o+1:
+                if year != weeks[week_idx].year: # Esto no pasa nunca
+                    year = weeks[week_idx].year
+                    cases = 0
+                    for p in diagnostic_cases:
+                        if p.week == weeks[week_idx]:
+                            cases += p.cases
+                    cases_per_years[i] = cases
+                    
+                    i += 1
 
         ##### Getting the quantiles ;)
 
         qs[0] = np.quantile(cases_per_years, 0.25)
         qs[1] = np.quantile(cases_per_years, 0.5)
         qs[2] = np.quantile(cases_per_years, 0.75)
-
-        qss[0] += np.quantile(cases_per_years, 0.25)
-        qss[1] += np.quantile(cases_per_years, 0.5)
-        qss[2] += np.quantile(cases_per_years, 0.75)
-
+        qss[0] += qs[0]
+        qss[1] += qs[1]
+        qss[2] += qs[2]
         cases_per_week = 0
 
         ####loop to count the amount of cases in the current year

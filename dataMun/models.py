@@ -15,18 +15,16 @@ class Zone(models.Model):
         return self.code.__str__()
 
 
-class Coordinate(models.Model):
-    lattitude = models.FloatField(default=0.0)
-    longitude = models.FloatField(default=0.0)
-    def __str__(self):
-        return self.lattitude.__str__() +"," + self.longitude.__str__()
-    
+
 
 class Center(models.Model):
     code = models.IntegerField(default=0)
     name = models.CharField(max_length=100)
     zone = models.ForeignKey(Zone,on_delete=models.CASCADE)
-    coordinate = models.ForeignKey(Coordinate,on_delete=models.CASCADE,blank=True, null=True)
+    latitude = models.FloatField(default=-31.4135,null=True)
+    longitude = models.FloatField(default=-64.18105,null=True)
+    
+
     def __str__(self):
         return self.name
 
@@ -36,7 +34,7 @@ class SpreadSheet(models.Model):
 
 class Year(models.Model):
     year = models.IntegerField()
-    population = models.IntegerField(null=True)
+    population = models.IntegerField(null=True,default=1)
     def __str__(self):
         return str(self.year)
 

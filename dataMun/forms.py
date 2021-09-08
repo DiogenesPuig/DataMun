@@ -18,7 +18,18 @@ class UserForm(ModelForm):
 
     fields = ['basic_field']
 
-
+class CenterForm(ModelForm):
+    class Meta:
+        model = Center
+        fields = '__all__'
+    def __init__(self, *args, **kwargs):
+        super(CenterForm, self).__init__(*args, **kwargs)
+        self.fields['latitude'].required = True
+        self.fields['longitude'].required = True
+        self.fields['zone'].disabled = True
+        self.fields['name'].disabled = True
+        self.fields['code'].disabled = True
+        
         
 class CreateFileForm(ModelForm):
     #last_name = forms.CharField(blank=False)

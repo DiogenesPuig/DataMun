@@ -1,26 +1,36 @@
+# django imports
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth import authenticate, login, logout
-from .forms import *
-from .decorators import *
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .script import *
-from .filters import *
 from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import redirect
 
-import datetime
-
-from rest_framework import generics
+# django-rest-framework imports
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAdminUser
+from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .serializers import *
+# my imports
+from .decorators import unauthenticated_user
+from .forms import CreateUserForm, CreateFileForm, CenterForm
+from .script import GetAlert, GetGraphicAverages, GetGraphicQuartiles, insertWorkbook
+from .filters import DiagnosticCasesFilter,WeekFilter
+from .serializers import CenterSerializer, DiagnosticSerializer
+from .models import Center, Diagnostic, DiagnosticCases, SpreadSheet, Week, Year
+import datetime
 
 
 # Create your views here.
+def homeView(request):
+    context = {
 
+    }
+    return render(request, 'home.html', )
 
 @login_required()
 def perfilView(request):
@@ -31,7 +41,6 @@ def logoutView(request):
     if request.user.is_authenticated:
         logout(request)
         return redirect("home")
-
 
 @unauthenticated_user
 def loginView(request):
@@ -54,7 +63,6 @@ def loginView(request):
 
     return render(request, 'login.html', context)
 
-
 @unauthenticated_user
 def registerView(request):
     form = CreateUserForm()
@@ -71,76 +79,73 @@ def registerView(request):
     }
     return render(request, 'register.html', context)
 
-
-def homeView(request):
-    context = {
-
-    }
-    return render(request, 'home.html', )
-
-
 class PaceintePorDiagnostico():
     def __init__(self, cantPacientePorDiagnostico, diagnostico):
         self.cantPacientePorDiagnostico = cantPacientePorDiagnostico
         self.diagnostico = diagnostico
 
-
 @user_passes_test(lambda u: u.is_staff)
 def diagnosticsView(request):
+    
     try:
-
         year = datetime.datetime.now().year
         year_obj = Year.objects.get(year=year)
-
-        weeks = Week.objects.filter(year=year_obj).order_by('-week')
-        max_week = weeks[0]
-        max_week = Week.objects.get(week=max_week.week,year=year_obj)
-        print(max_week.week)
-        """for week in weeks:
-            if week.week > max_week.week:
-                max_week = week"""
-
-        diagnostics = Diagnostic.objects.all()
-        diagnostic_cases = DiagnosticCases.objects.all()
-        alerts = []
-        diagn_cod = []
-
-        for diagnostic in diagnostics:
-            if len(alerts) != 10:
-                dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
-                if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
-                    if diagnostic.code not in diagn_cod:
-                        alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
-                        diagn_cod.append(diagnostic.code)
-            else:
-                break
-
-        context = {
-            'max_week': max_week,
-            'alerts': alerts,
-        }
     except:
-        context = {}
+        year_obj = Year.objects.last()
+
+    weeks = Week.objects.filter(year=year_obj).order_by('-week')
+    max_week = weeks[0]
+    max_week = Week.objects.get(pk=max_week.id)
+    print(max_week.week)
+    """for week in weeks:
+        if week.week > max_week.week:
+            max_week = week"""
+
+    diagnostics = Diagnostic.objects.all()
+    diagnostic_cases = DiagnosticCases.objects.all()
+    alerts = []
+    diagn_cod = []
+
+    for diagnostic in diagnostics:
+        if len(alerts) != 10:
+            dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
+            if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
+                if diagnostic.code not in diagn_cod:
+                    alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
+                    diagn_cod.append(diagnostic.code)
+        else:
+            break
+
+    context = {
+        'max_week': max_week,
+        'alerts': alerts,
+    }
+    
+        
     return render(request, 'diagnostics.html', context)
 
 
 @user_passes_test(lambda u: u.is_staff)
-######## aca
 def diagnosticView(request, cod_diagnostic):
     diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
     diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
 
     weeks = Week.objects.all()
     p = DiagnosticCasesFilter(request.GET, queryset=diagnostic_cases)
-
+    w = WeekFilter(request.GET)
+    num_years = 3
     if request.GET:
         messages.info(request, "Filters aplied")
-    try:
-        year = int(request.GET.get('year__lt'))
-    except:
-        year = 0
-    if year == 0:
-        year = 2021
+        try:
+            year = Year.objects.get(pk=request.GET.get('year')).year
+        except:
+            year = Year.objects.all().order_by('-year')[0].year
+        try:
+            num_years = int(request.GET.get('num_years'))
+        except:
+            num_years = 3
+    else:
+        year = Year.objects.all().order_by('-year')[0].year
 
     centrosName = []
     centros = []
@@ -169,9 +174,9 @@ def diagnosticView(request, cod_diagnostic):
         if len(centrosName) >= 20:
             break
 
-    averages, cumulative_averages = GetGraphicAverages(p.qs, diagnostic, weeks, year, 3)
+    averages, cumulative_averages = GetGraphicAverages(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 1 and 3 Ok')
-    quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, 3)
+    quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 2 Ok')
     context = {
         'averages': averages,
@@ -179,9 +184,13 @@ def diagnosticView(request, cod_diagnostic):
         'cumulative_averages': cumulative_averages,
         'cumulative_quartiles': cumulative_quartiles,
         'diagnostic': diagnostic,
-        'filterP': p,
-        'google_api_key': settings.APY_KEY,
         'centros': centros,
+        'year': year,
+        'diagnostic_cases_filter': p,
+        'week_filter':w,
+        'num_years': num_years,
+        'google_api_key': settings.APY_KEY,
+        
     }
 
     #context = {}
@@ -198,28 +207,8 @@ def uploadFileView(request):
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
             success = insertWorkbook(file)
-
-            """
-            if len(success) != 1:
-                file = SpreadSheet.objects.get(pk=file.id)
-                file.delete()
-                for error in success:
-                    if error[0] == 1:
-                        form._errors["tabla"] = ErrorList([u" El archivo subido debe ser excel."])
-                    if error[0] == 2:
-
-                        form._errors["tabla"] = ErrorList([u" Revisa que el titulo de la hoja este correcto con su año y semana"])
-
-                    context = {
-                        'form':form
-                    }
-
-                return render(request, 'uploadFile.html',context)"""
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
             return redirect('diagnostics')  ## redirects to aliquot page ordered by the most recent
-
-
-
     else:
         form = CreateFileForm()  # An unbound form
 
@@ -228,21 +217,56 @@ def uploadFileView(request):
     }
     return render(request, 'uploadFile.html', context)
 
-
+@user_passes_test(lambda u: u.is_staff)
 def centersView(request):
     return render(request, 'centers.html')
 
+@user_passes_test(lambda u: u.is_staff)
+def centerView(request, cod_center):
+    center = Center.objects.get(code=cod_center)
+    center_form = CenterForm(instance=center)
+    if request.method == "POST":  # If the form has been submitted...
+
+        # All validation rules pass
+        center_form = CenterForm(request.POST,instance=center)
+        if center_form.is_valid():
+            center = center_form.save()
+            messages.success(request, "El centro " + str(center.name) + ' fue editado ')
+            return redirect('centers')  ## redirects to aliquot page ordered by the most recent
+    else:
+        center_form = CenterForm(instance=center) # An unbound form
+
+    context = {
+        'center': center,
+        'center_form':center_form
+    }
+
+    #context = {}
+    return render(request, 'center.html', context)
+
 
 # django rest_fremework views
-class CenterView(generics.ListAPIView):
+
+class CenterReadonlyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `retrieve` actions.
+    """
     queryset = Center.objects.all()
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAdminUser,)
     serializer_class = CenterSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_fields = {'name': ['icontains']}
 
 
-class DiagnosticsView(generics.ListAPIView):
+class DiagnosticReadonlyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `retrieve` actions.
+    """
     queryset = Diagnostic.objects.all()
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAdminUser,)
     serializer_class = DiagnosticSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_fields = {'name': ['icontains']}
+

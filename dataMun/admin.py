@@ -3,7 +3,7 @@ from .models import *
 
 
 class CenterAdmin(admin.ModelAdmin):
-    list_display = ('code','name','coordinate','zone')
+    list_display = ('code','name','latitude','longitude','zone')
 
 class ZoneAdmin(admin.ModelAdmin):
     list_display = ('code',)
@@ -31,7 +31,7 @@ admin.site.register(Week)
 admin.site.register(Year,YearAdmin)
 admin.site.register(DiagnosticCases,DiagnosticCasesAdmin)
 admin.site.register(SpreadSheet)
-admin.site.register(Coordinate)
+
 
 
 admin.site.site_header = "DaMu administracion de la provincio de cordoba"

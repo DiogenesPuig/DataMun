@@ -1,0 +1,63 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}
+Center
+{% endblock %}
+{% block content %}
+
+<div class="section white hoverable">
+    <div class="row container" >
+        <div class="col s12">
+            <div class="row center" >
+                <h5>Centro {{center.name}}</h5>
+            
+            </div>
+            <div class="card white">
+                <div class="card-content">
+                    <table class=" highlight centered responsive-table">
+                        <thead>
+                            <span class="card-title">Centro</span>
+                            <div class="divider"></div>
+                            <tr>
+                                <th>Codigo</th>
+                                <th>Nombre</th>
+                                <th>Zona</th>
+                                <th>Latitud</th>
+                                <th>Longitud</th>
+                            </tr>
+                        </thead>
+
+                        <tbody >
+                            <tr>
+                                <td>{{center.code}}</td>
+                                <td>{{center.name}}</td>
+                                <td>{{center.zone}}</td>
+                                <td>{{center.latitude}}</td>
+                                <td>{{center.longitude}}</td>
+                                
+                            </tr> 
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-action">
+                    <span class="card-title">Cambiar coordenadas</span>
+                    
+                    
+                    <form method="POST" >
+                        {%csrf_token%}
+                        {{ center_form.as_p }}
+                        <input type="submit" class="btn" value="Guardar">
+                        
+                    </form>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+{%endblock%}
