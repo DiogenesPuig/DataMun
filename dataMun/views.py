@@ -229,9 +229,17 @@ def uploadFileView(request):
         # All validation rules pass
         form = CreateFileForm(request.POST, request.FILES)
         if form.is_valid():
+            file = SpreadSheet(file=request.FILES['file'])
+            
+            
+            try:
+                success = insertWorkbook(file)
+            except:
+
+                messages.success(request, "Error formato de hoja de calculos incorrecto.")
+                return redirect("uploadFile")
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
-            success = insertWorkbook(file)
             messages.success(request, "El archivo " + str(file.file) + ' fue agregado exitosamente')
             messages.success(request, success)
             return redirect('diagnostics')  ## redirects to aliquot page ordered by the most recent
