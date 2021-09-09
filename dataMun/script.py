@@ -397,10 +397,11 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
     if n_years % 2 != 0:
         suma = -1
 
+
     qs = [0] * 3
     qss = [0] * 3
 
-    diagnost_cases = diagnostic_cases
+    diagnost_cases = diagnostic_cases.filter(week__in=weeks_current_year)
 
     dots_graphic_quartiles = [ ]
     dots_graphic_cumulative = [ ]
@@ -434,13 +435,14 @@ def GetGraphicQuartiles(diagnostic_cases, diagnostic, weeks,year, n_years):
         cases_per_week = 0
 
         ####loop to count the amount of cases in the current year
+        year=  None
         for week in weeks_current_year:
-            if week.week == o+1 :
-                dia = diagnost_cases.filter(week=week)
-                suma = 0
-                for d in dia:
-                    cases_per_week += d.cases
-                cases_per_week_acumulative += cases_per_week
+            if week.week == o+1:
+                for d in diagnost_cases:
+                    year = d.week.year.year
+                    if d.week == week:
+                        cases_per_week += d.cases
+        cases_per_week_acumulative += cases_per_week
 
         dots = DotsGraphicQuartile(qs[0],qs[1],qs[2],cases_per_week,o+1)
         dots_aculative = DotsGraphicQuartile(qss[0],qss[1],qss[2],cases_per_week_acumulative,o+1)
