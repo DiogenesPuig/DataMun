@@ -23,7 +23,13 @@ class Center(models.Model):
     zone = models.ForeignKey(Zone,on_delete=models.CASCADE)
     latitude = models.FloatField(default=-31.4135,null=True)
     longitude = models.FloatField(default=-64.18105,null=True)
-    
+    def get_cases(self,diagnostic):
+        diagnostic_cases = self.diagnostic_cases
+        diagnostic_cases = diagnostic_cases.filter(diagnostic=diagnostic)
+        cant = 0
+        for diagnostic_case in diagnostic_cases:
+            cant += diagnostic_case.cases
+        return cant
 
     def __str__(self):
         return self.name
@@ -72,7 +78,7 @@ class DiagnosticCases(models.Model):
     age = models.ForeignKey(Age,on_delete=models.CASCADE,blank=True)
     cases = models.IntegerField()
     diagnostic = models.ForeignKey(Diagnostic,on_delete=models.CASCADE,blank=True)
-    center = models.ForeignKey(Center,on_delete=models.CASCADE,blank=True)
+    center = models.ForeignKey(Center,related_name="diagnostic_cases",on_delete=models.CASCADE,blank=True)
     week = models.ForeignKey(Week,on_delete=models.CASCADE,blank=True)
     creation = models.DateTimeField(auto_now_add=True)
     def __str__(self):

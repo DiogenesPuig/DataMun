@@ -167,32 +167,26 @@ def diagnosticView(request, cod_diagnostic):
     else:
         year = Year.objects.all().order_by('-year')[0].year
 
-    centrosName = []
-    centros = []
-    centro = ""
-    suma = 0
     pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
-    for pac in pacientes:
-        if pac.center not in centrosName:
-            if pac.center.name == centro:
-                suma += pac.cases
-            else:
 
-                centrosName.append(centro)
-                n = 'centro ' + centro
-                co = {
-                    'nombre': n,
-                    'cases': suma,
-                    'cod': pac.center.code,
-                }
 
-                centros.append(co)
+    centros = []
+    centers = Center.objects.all()
+    for center in centers:
+        if center.longitude is None:
+            center.longitude = 0.1
 
-                centro = pac.center.name
-
-                suma = 0
-        if len(centrosName) >= 20:
-            break
+        if center.latitude is None:
+            center.latitude = 0.1
+        n = 'centro ' + center.name
+        c = {
+            'nombre': n,
+            'cases': center.get_cases(diagnostic),
+            'cod': center.code,
+            'lat': center.latitude,
+            'lon': center.longitude
+        }
+        centros.append(c)
 
     averages, cumulative_averages = GetGraphicAverages(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 1 and 3 Ok')

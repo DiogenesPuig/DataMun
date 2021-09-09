@@ -24,46 +24,43 @@ function initMap() {
             fields: ["name", "geometry"],
         };
         
-        service.findPlaceFromQuery(plac, (results, status) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                const centerCircle = new google.maps.Circle({
-                    strokeColor: color,
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: color,
-                    fillOpacity: 0.35,
-                    map,
-                    center: results[0].geometry.location,
-                    radius: Math.sqrt(centersMap[c].cases) * 100,
-                    description: centersMap[c].cases,
-                });
-                const contentString =
-                '<div id="content">' +
-                '<div id="siteNotice">' +
-                "</div>" +
-                '<h5 id="firstHeading" class="firstHeading">'+centersMap[c].name+'</h5>' +
-                '<div id="bodyContent">' +
-                '<p><b>'+centersMap[c].name+' es el centro N°' +  centersMap[c].cod+ '</b><br>'+
-                'Se realizaron ' + centersMap[c].cases + ' diagnosticos</p>'+
-                "</div>" +
-                "</div>";
-                const infowindow = new google.maps.InfoWindow({
-                    content: contentString,
-                    maxWidth: 200,
-                });
 
-                const marker = new google.maps.Marker({
-                    position: results[0].geometry.location,
-                    map,
-                    title: centersMap[c].name,
-                });
-                centerCircle.addListener("click", () => {
-                    infowindow.open(map, marker);
-                });
-                marker.addListener("click", () => {
-                    infowindow.open(map, marker);
-                });
-            }
+        const centerCircle = new google.maps.Circle({
+            strokeColor: color,
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: color,
+            fillOpacity: 0.35,
+            map,
+            center: { lat: centersMap[c].lat, lng: centersMap[c].lon },
+            radius: Math.sqrt(centersMap[c].cases) * 100,
+            description: centersMap[c].cases,
+        });
+        const contentString =
+        '<div id="content">' +
+        '<div id="siteNotice">' +
+        "</div>" +
+        '<h5 id="firstHeading" class="firstHeading">'+centersMap[c].name+'</h5>' +
+        '<div id="bodyContent">' +
+        '<p><b>'+centersMap[c].name+' es el centro N°' +  centersMap[c].cod+ '</b><br>'+
+        'Se realizaron ' + centersMap[c].cases + ' diagnosticos</p>'+
+        "</div>" +
+        "</div>";
+        const infowindow = new google.maps.InfoWindow({
+            content: contentString,
+            maxWidth: 200,
+        });
+
+        const marker = new google.maps.Marker({
+            position: { lat: centersMap[c].lat, lng: centersMap[c].lon },
+            map,
+            title: centersMap[c].name,
+        });
+        centerCircle.addListener("click", () => {
+            infowindow.open(map, marker);
+        });
+        marker.addListener("click", () => {
+            infowindow.open(map, marker);
         });
     }
 }
