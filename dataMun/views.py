@@ -232,7 +232,8 @@ def uploadFileView(request):
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
             success = insertWorkbook(file)
-            messages.success(request, "El archivo " + str(file.file) + ' fue agregado')
+            messages.success(request, "El archivo " + str(file.file) + ' fue agregado exitosamente')
+            messages.success(request, success)
             return redirect('diagnostics')  ## redirects to aliquot page ordered by the most recent
     else:
         form = CreateFileForm()  # An unbound form

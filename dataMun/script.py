@@ -35,10 +35,13 @@ def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter
 
     insert_sql_statement = ""
     insert_sql_statement = f"insert into {table_name} ({sheet_name_0},{sheet_name_1},{cols}) values "
+    weeks_inserted = 0
+
     for sheet in workbook.worksheets:
         sheet_name_list = str(sheet.title).split(sheet_name_splitter)
         year = sheet_name_list[0]
         week = sheet_name_list[1]
+        weeks_inserted += 1
         for row in sheet.iter_rows(min_row=min_row,values_only=True):
             values = "("
             values += f"{year},{week},"
@@ -74,7 +77,7 @@ def workbookToSqlStatements(workbook,table_name,sheet_name_0,sheet_name_splitter
     insert_sql_statement += ";"
 
     #insert_sql_statement = insert_sql_statement.replace(",\n;","\n;")
-    return create_sql_statement, insert_sql_statement
+    return str(weeks_inserted), create_sql_statement, insert_sql_statement
 
 hostname = settings.DATABASES["default"]["HOST"]
 username = settings.DATABASES["default"]["USER"]
@@ -131,7 +134,7 @@ def insertWorkbook(spread_sheet):
     c = conn.cursor()
     start = time()
     print("workbookToSqlStatements started")
-    create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)
+    weeks_inserted, create_sql_statement, insert_sql_statement = workbookToSqlStatements(workbook,"raw","year"," ","week",["col0","col1","col2","col3","col4","col5","col6","col7","col8","col9","col10","col11","col12","col13","col14","col15","col16","col17","col18","col19","col20"],[0,1,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],70,2)
     print(f"workbookToSqlStatements finished after {round(time()-start,4)} seconds")
     #print("finalizado el srting:",insert_sql_statement)
     #print(create_sql_statement)
@@ -186,6 +189,7 @@ def insertWorkbook(spread_sheet):
     workbook.close()
     conn.close()
     print(f"total finished after {round(time()-start_total,4)} seconds")
+    return "Semanas insertadas " + weeks_inserted
 
 class DotsGraphicAverage():
     """
@@ -241,7 +245,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 if year != weeks[w].year: # Esto no pasa nunca
                     year = weeks[w].year
                     cases = 0
-                    pop = weeks[w].year.population
+                    
                     
                     for p in diagnostic_cases_w:
 
@@ -249,7 +253,7 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     
                             cases += p.cases
 
-                    f[y_idx ] = (cases / pop * 100000)
+                    f[y_idx ] = cases
                     y_idx +=1
 
         averages[i] = np.average(f) #borrar
@@ -264,12 +268,8 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
                 for d in dia:
 
                     cases += d.cases
-            popu = week.year.population
 
-        cases_per_weeks[i] = np.log(cases / popu * 100000)
-
-
-        cases_per_weeks[i] = cases
+        cases_per_weeks[i] = cases 
 
 
     #array of class dots for draw the chart of averages
@@ -286,14 +286,6 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
     for i in range(len(standard_deviations)):
         lower_rank = 0
         top_rank = 0
-        averages[i] = np.exp(averages[i])
-        averages[i] = averages[i] * current_year.population / 100000
-
-        averages[i] = averages[i]
-        standard_deviations[i] = standard_deviations[i]
-
-        standard_deviations[i] = standard_deviations[i] * current_year.population / 100000
-
 
         if n_years != 0:
             lower_rank = averages[i] - (t * standard_deviations[i]/ math.sqrt(n_years))
@@ -301,18 +293,12 @@ def GetGraphicAverages(diagnostic_cases, diagnostic, weeks,year, n_years):
             if lower_rank < 0:
                 lower_rank = 0
 
-
-        cases_per_weeks[i] = np.exp(cases_per_weeks[i])
-        cases_per_weeks[i] = cases_per_weeks[i] * current_year.population / 100000
-
         # Acumulative dots
         cases_acumulative += cases_per_weeks[i]
         average_cumulative += averages[i]
         if lower_rank >= 0:
             lower_rank_cumulative += lower_rank
         top_rank_cumulative += top_rank
-
-
 
         dots_average = DotsGraphicAverage(averages[i],i+1, lower_rank, top_rank,cases_per_weeks[i])
         dots_cumulative = DotsGraphicAverage(average_cumulative,i+1, lower_rank_cumulative, top_rank_cumulative,cases_acumulative)
