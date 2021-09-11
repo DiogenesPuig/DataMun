@@ -46,9 +46,26 @@ Center
                     <form method="POST" >
                         {%csrf_token%}
                         {{ center_form.as_p }}
+                        <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Elegir ubicacion en el mapa</a>
+
+                        <!-- Modal Structure -->
+                        <div id="modal1" class="modal">
+                            <div class="modal-content">
+                            <h4>Toca en el mapa para editar ubicacion</h4>
+                            <div id="map" class="col s12 " ></div>
+                            </div>
+                            <div class="modal-footer">
+                            <a  class="modal-close waves-effect waves-red btn-flat">cancelar</a>
+                            <a  id="ok" class="modal-close waves-effect waves-green btn-flat">Guardar</a>
+                            </div>
+                        </div>
                         <input type="submit" class="btn" value="Guardar">
                         
                     </form>
+                    
+                                
+                    
+                    <script src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=editMarker&libraries=places,drawing" async></script>
                     
                 </div>
             </div>

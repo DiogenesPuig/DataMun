@@ -62,9 +62,9 @@ function filterDiagnostic(){
 }
 
 function addCenter(code,name,latitude,longitude){
-    var li = "<li class='collection-item'><div class='row valign-wrapper center'><div class='col s2'>"
+    var li = "<li class='collection-item'><div class='row valign-wrapper center'><div class='col s1'>"
     var end_li= "</div><div class='col s2'><a href='/centers/" + code + "' class='secondary-content btn'>Editar cordenadas<i class='material-icons right'>edit</i></a></div></div></li>"
-    var div = document.getElementById("centers").innerHTML += li + code +  "</div><div class='col s4'>" + name +  "</div><div class='col s2'>" + latitude + "</div><div class='col s2'>" + longitude + end_li;
+    var div = document.getElementById("centers").innerHTML += li + code +  "</div><div class='col s3'>" + name +  "</div><div class='col s3'>" + latitude + "</div><div class='col s3'>" + longitude + end_li;
 }
 
 function filterCenter(){

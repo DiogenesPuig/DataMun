@@ -170,9 +170,9 @@ def diagnosticView(request, cod_diagnostic):
     pacientes = p.qs.filter(diagnostic=diagnostic).order_by("center")
 
 
-    centros = []
-    centers = Center.objects.all()
-    for center in centers:
+    centers = []
+    centers_obj = Center.objects.all()
+    for center in centers_obj:
         if center.longitude is None:
             center.longitude = 0.1
 
@@ -182,11 +182,11 @@ def diagnosticView(request, cod_diagnostic):
         c = {
             'nombre': n,
             'cases': center.get_cases(diagnostic),
-            'cod': center.code,
+            'code': center.code,
             'lat': center.latitude,
             'lon': center.longitude
         }
-        centros.append(c)
+        centers.append(c)
 
     averages, cumulative_averages = GetGraphicAverages(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 1 and 3 Ok')
@@ -198,7 +198,7 @@ def diagnosticView(request, cod_diagnostic):
         'cumulative_averages': cumulative_averages,
         'cumulative_quartiles': cumulative_quartiles,
         'diagnostic': diagnostic,
-        'centros': centros,
+        'centers': centers,
         'year': year,
         'diagnostic_cases_filter': p,
         'week_filter':w,
@@ -267,7 +267,9 @@ def centerView(request, cod_center):
 
     context = {
         'center': center,
-        'center_form':center_form
+        'center_form':center_form,
+        'google_api_key': settings.APY_KEY,
+
     }
 
     #context = {}

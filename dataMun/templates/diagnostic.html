@@ -295,18 +295,18 @@ Diagnostic
                                 <div id="map" class="col s12 " ></div>
                                 
                                 <script>
-                                    const centersMap = {
-                                        {% for centro in centros %}
-                                        {{centro.cod}}:{
-                                            name: '{{centro.nombre}}',
-                                            cases: {{centro.cases}},
-                                            cod: {{centro.cod}},
-                                            lat: {{centro.lat}},
-                                            lon: {{centro.lon}},
+                                    const centers = {
+                                        {% for center in centers %}
+                                        {{center.code}}:{
+                                            name: '{{center.nombre}}',
+                                            cases: {{center.cases}},
+                                            code: {{center.code}},
+                                            lat: {{center.lat}},
+                                            lon: {{center.lon}},
                                         },
                                         {% endfor %}
                                     };
-                                    const length = {% for centro in centros %} +1 {% endfor %};
+                                    const length = {% for center in centers %} +1 {% endfor %};
                                     
                                 </script>
                                 <script src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initMap&libraries=places,drawing" async></script>
