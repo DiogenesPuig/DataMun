@@ -110,36 +110,39 @@ def diagnosticsView(request):
         year_obj = Year.objects.last()
 
     weeks = Week.objects.filter(year=year_obj).order_by('-week')
-    max_week = weeks[0]
-    max_week = Week.objects.get(pk=max_week.id)
-    print(max_week.week)
-    """for week in weeks:
-        if week.week > max_week.week:
-            max_week = week"""
+    try:
+        max_week = weeks[0]
+        max_week = Week.objects.get(pk=max_week.id)
+        print(max_week.week)
+        """for week in weeks:
+            if week.week > max_week.week:
+                max_week = week"""
 
-    diagnostics = Diagnostic.objects.all()
-    diagnostic_cases = DiagnosticCases.objects.all()
-    alerts = []
-    diagn_cod = []
+        diagnostics = Diagnostic.objects.all()
+        diagnostic_cases = DiagnosticCases.objects.all()
+        alerts = []
+        diagn_cod = []
 
-    for diagnostic in diagnostics:
-        if len(alerts) != 10:
-            dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
-            if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
-                if diagnostic.code not in diagn_cod:
-                    alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
-                    diagn_cod.append(diagnostic.code)
-        else:
-            break
+        for diagnostic in diagnostics:
+            if len(alerts) != 10:
+                dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
+                if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
+                    if diagnostic.code not in diagn_cod:
+                        alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
+                        diagn_cod.append(diagnostic.code)
+            else:
+                break
 
-    context = {
-        'max_week': max_week,
-        'alerts': alerts,
-    }
-    
+        context = {
+            'max_week': max_week,
+            'alerts': alerts,
+        }
         
-    return render(request, 'diagnostics.html', context)
-
+            
+        return render(request, 'diagnostics.html', context)
+    except:
+        messages.info(request, "No hay diagnosticos cargados")
+        return redirect('uploadFile')
 
 @user_passes_test(lambda u: u.is_staff)
 def diagnosticView(request, cod_diagnostic):
@@ -294,7 +297,7 @@ class DiagnosticReadonlyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides `list` and `retrieve` actions.
     """
-    queryset = Diagnostic.objects.all()
+    queryset = Diagnostic.objects.all().order_by('code')
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAdminUser,)
     serializer_class = DiagnosticSerializer
