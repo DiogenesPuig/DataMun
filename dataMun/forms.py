@@ -57,3 +57,9 @@ class CreateUserForm(UserCreationForm):
         super(CreateUserForm, self).__init__(*args, **kwargs)
         self.fields['last_name'].required = True
         self.fields['first_name'].required = True
+
+class DiagnosticForm(ModelForm):
+    
+    class Meta:
+        model = Diagnostic
+        fields = ['alert']

@@ -11,8 +11,22 @@ Diagnostic
     <div class="row" >
         <div class="col s12 " >
             <div class="row center" >
-                <h5>Diagnostico {{diagnostic.name}}</h5>
-            
+                <div class="col s8 " >
+                    <h5>Diagnostico {{diagnostic.name}}</h5>
+                </div>
+                <div class="col s4 " >
+                    <form method="post">
+                        {%csrf_token%}
+                        <p>
+                        <label>
+                            {{ diagnostic_form.alert }}
+                            <span>Tener en cuenta para recibir alertas?</span>
+                        </label>
+                        </p>
+                        
+                        <input type="submit" class="btn" value="Guardar">
+                    </form>
+                </div>
             
             </div>
             
@@ -311,6 +325,8 @@ Diagnostic
                                 </script>
                                 <script src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initMap&libraries=places,drawing" async></script>
                             </div>
+                            
+                            
                         </div>
                     </div>
                 </div>

@@ -17,7 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 # my imports
 from .decorators import unauthenticated_user
-from .forms import CreateUserForm, CreateFileForm, CenterForm
+from .forms import CreateUserForm, CreateFileForm, CenterForm, DiagnosticForm
 from .script import GetAlert, GetGraphicAverages, GetGraphicQuartiles, insertWorkbook
 from .filters import DiagnosticCasesFilter,WeekFilter
 from .serializers import CenterSerializer, DiagnosticSerializer
@@ -124,14 +124,16 @@ def diagnosticsView(request):
         diagn_cod = []
 
         for diagnostic in diagnostics:
-            if len(alerts) != 10:
-                dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
-                if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
-                    if diagnostic.code not in diagn_cod:
-                        alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
-                        diagn_cod.append(diagnostic.code)
-            else:
-                break
+            if ( diagnostic.alert):
+                if len(alerts) != 10:
+                    dots = GetAlert(diagnostic_cases, diagnostic, max_week, year)
+                    if dots.cases > dots.top_rank and dots.cases != 0 and dots.week == max_week.week:
+                        if diagnostic.code not in diagn_cod:
+                            alerts.append({'diagnostic': diagnostic, 'cases': dots.cases})
+                            diagn_cod.append(diagnostic.code)
+                else:
+                    break
+            
 
         context = {
             'max_week': max_week,
@@ -151,6 +153,16 @@ def diagnosticView(request, cod_diagnostic):
     his own charts and it have filters if you need to use
     """
     diagnostic = Diagnostic.objects.get(code=cod_diagnostic)
+    diagnostic_form = DiagnosticForm(instance=diagnostic)
+    if request.method == "POST":  # If the form has been submitted...
+
+        # All validation rules pass
+        diagnostic_form = DiagnosticForm(request.POST,instance=diagnostic)
+        if diagnostic_form.is_valid():
+            diagnostic = diagnostic_form.save()
+            messages.success(request, "El diagnostico " + str(diagnostic.name) + ' fue editado ')
+              ## redirects to aliquot page ordered by the most recent
+
     diagnostic_cases = DiagnosticCases.objects.filter(diagnostic=diagnostic)
 
     weeks = Week.objects.all()
@@ -196,6 +208,7 @@ def diagnosticView(request, cod_diagnostic):
     quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 2 Ok')
     context = {
+        'diagnostic_form':diagnostic_form,
         'averages': averages,
         'quartiles': quartiles,
         'cumulative_averages': cumulative_averages,
