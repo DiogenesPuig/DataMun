@@ -47,7 +47,7 @@ function filter(end_point,callback) {
 function addDiagnostic(code,name){
     var li = "<li class='collection-item'><div class='row'><div class='col s2'>"
     var end_li= "</a></div></div></li>"
-    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'><a href='/diagnostics/" + code +  "'>" + name + end_li;
+    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'><a  onclick='loading()' href='/diagnostics/" + code +  "'>" + name + end_li;
 }
 
 function filterDiagnostic(){
