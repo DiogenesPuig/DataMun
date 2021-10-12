@@ -5,6 +5,7 @@ upload a file
 {% endblock %}
 {% block content %}
 
+ 
 <div class="section white hoverable">
     <div class="row container center" >
         <h2>Subir un archivo</h2>
@@ -12,7 +13,7 @@ upload a file
     <div class="row container center" >
             <div class="col s12">
                 
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data"  onsubmit="loading()">
                 <div class="row left">
                 {% csrf_token %}
                 {{form.as_p}}
@@ -21,11 +22,13 @@ upload a file
                     <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Subir archivo
                         <i class="material-icons right">send</i>
                     </button>
+                    
                 </div>
                 </form>
             </div>
     </div>
 </div>
+
 
 
 
