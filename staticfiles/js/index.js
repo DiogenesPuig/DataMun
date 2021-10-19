@@ -47,7 +47,7 @@ function filter(end_point,callback) {
 function addDiagnostic(code,name){
     var li = "<li class='collection-item'><div class='row'><div class='col s2'>"
     var end_li= "</a></div></div></li>"
-    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'><a href='/diagnostics/" + code +  "'>" + name + end_li;
+    var div = document.getElementById("diagnostics").innerHTML += li + code +  "</div><div class='col s10'><a  onclick='loading()' href='/diagnostics/" + code +  "'>" + name + end_li;
 }
 
 function filterDiagnostic(){
@@ -62,9 +62,9 @@ function filterDiagnostic(){
 }
 
 function addCenter(code,name,latitude,longitude){
-    var li = "<li class='collection-item'><div class='row valign-wrapper center'><div class='col s2'>"
+    var li = "<li class='collection-item'><div class='row valign-wrapper center'><div class='col s1'>"
     var end_li= "</div><div class='col s2'><a href='/centers/" + code + "' class='secondary-content btn'>Editar cordenadas<i class='material-icons right'>edit</i></a></div></div></li>"
-    var div = document.getElementById("centers").innerHTML += li + code +  "</div><div class='col s4'>" + name +  "</div><div class='col s2'>" + latitude + "</div><div class='col s2'>" + longitude + end_li;
+    var div = document.getElementById("centers").innerHTML += li + code +  "</div><div class='col s3'>" + name +  "</div><div class='col s3'>" + latitude + "</div><div class='col s3'>" + longitude + end_li;
 }
 
 function filterCenter(){
