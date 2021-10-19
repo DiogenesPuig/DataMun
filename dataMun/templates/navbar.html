@@ -28,14 +28,14 @@
 </ul>
 <nav class="white nav-extended" role="navigation">
 	<div class="nav-wrapper container">
-		<a id="logo-container" href="{{home_url}}" class="brand-logo lack-text black-text"><img src="{% static '/media/logo.png' %}" alt="Damu" height="64px" loading="lazy"></a>
+		<a id="logo-container" href="{{home_url}}" class="brand-logo black-text"><img src="{% static '/media/logo.png' %}" alt="Damu" height="64px" loading="lazy"></a>
 		
 		<ul class="right hide-on-med-and-down">
 			<li><a  class="black-text" href="{{centers_url}}" onclick="loading()"><i class="material-icons left">local_hospital</i>Centros</a></li>
 			<li><a  class="black-text" href="{{diagnostics_url}}" onclick="loading()"><i class="material-icons left">colorize</i>Diagnosticos</a></li>
 			<li><a  class="black-text" href="{{uploadFile_url}}" onclick="loading()"><i class="material-icons left">attach_file</i>Subir Archivo</a></li>
-		    <li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown2"><i class="material-icons right">arrow_drop_down</i>Cuenta                .</a></li>
-
+			<li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown2"><i class="material-icons right">arrow_drop_down</i>Cuenta.</a></li>
+			<li><a class="dropdown-trigger black-text" href="{{home_url}}" data-target="dropdown2"><i class="material-icons right">help_outline</i></a></li>		    
         </ul>
 		<a  href="#" data-target="slide-out" class="sidenav-trigger black-text"><i class="material-icons">menu</i></a>
 		
@@ -51,6 +51,7 @@
 	<li><a  class="black-text" href="{{diagnostics_url}}" onclick="loading()"><i class="material-icons left">colorize</i>Diagnosticos</a></li>
 	<li><a  class="black-text" href="{{uploadFile_url}}" onclick="loading()"><i class="material-icons left">attach_file</i>Subir Archivo</a></li>
 	<li><a class="dropdown-trigger black-text" href="#!" data-target="dropdown1"><i class="material-icons right">arrow_drop_down</i>Cuenta                 .</a></li>
+	<li><a class="dropdown-trigger black-text" href="{{home_url}}" data-target="dropdown2"><i class="material-icons right">help_outline</i></a></li>
 </ul>
 
 <script>
