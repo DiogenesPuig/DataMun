@@ -37,7 +37,7 @@
     
 </head>
     <body onload="">
-
+        <div id="up"></div>
         {% include "navbar.html" %}
         <div id=loader style="visibility: hidden; margin: 10px; position: absolute;" class="center">
             <div class="preloader-wrapper active">
@@ -71,6 +71,7 @@
                 <i class="material-icons">message</i>
             {% endblock %}
         </main>
+        <div id="down"></div>
     </body>
 
     <footer class="page-footer green">
@@ -79,6 +80,7 @@
                 <div class="col l6 s12">
                     <h5 class="white-text">Damu</h5>
                     <p class="grey-text text-lighten-4">Propuesta de manejo de diagnosticos medicos y epidemiolagicos de la municipalidad</p>
+                
                 </div>
                 <div class="col l4 offset-l2 s12">
                     <h5 class="white-text"></h5>
@@ -101,9 +103,9 @@
             <i class="large material-icons">dehaze</i>
         </a>
         <ul>
-            <li><a class="btn-floating green"><i class="material-icons">message</i></a></li>
-            <li><a class="btn-floating blue"><i class="material-icons">arrow_upward</i></a></li>
-            <li><a class="btn-floating red"><i class="material-icons">arrow_downward</i></a></li>
+            
+            <li><a class="btn-floating blue" href="#up"><i class="material-icons">arrow_upward</i></a></li>
+            <li><a class="btn-floating red" href="#down"><i class="material-icons">arrow_downward</i></a></li>
 
         </ul>
     </div>
