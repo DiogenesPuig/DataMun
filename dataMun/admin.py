@@ -31,6 +31,7 @@ admin.site.register(Week)
 admin.site.register(Year,YearAdmin)
 admin.site.register(DiagnosticCases,DiagnosticCasesAdmin)
 admin.site.register(SpreadSheet)
+admin.site.register(ApiKey)
 
 
 

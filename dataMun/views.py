@@ -21,7 +21,7 @@ from .forms import CreateUserForm, CreateFileForm, CenterForm, DiagnosticForm
 from .script import GetAlert, GetGraphicAverages, GetGraphicQuartiles, insertWorkbook
 from .filters import DiagnosticCasesFilter,WeekFilter
 from .serializers import CenterSerializer, DiagnosticSerializer
-from .models import Center, Diagnostic, DiagnosticCases, SpreadSheet, Week, Year
+from .models import ApiKey, Center, Diagnostic, DiagnosticCases, SpreadSheet, Week, Year
 import datetime
 
 
@@ -207,6 +207,12 @@ def diagnosticView(request, cod_diagnostic):
     print('graphic 1 and 3 Ok')
     quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 2 Ok')
+    try: 
+        API = ApiKey.objects.first()
+    except:
+        API = ""
+        messages.warning(request,"No se encontro una KEY de GOOGLE MAPS, debe agregar una valida desde admin")
+
     context = {
         'diagnostic_form':diagnostic_form,
         'averages': averages,
@@ -219,7 +225,7 @@ def diagnosticView(request, cod_diagnostic):
         'diagnostic_cases_filter': p,
         'week_filter':w,
         'num_years': num_years,
-        'google_api_key': settings.APY_KEY,
+        'google_api_key': API,
         
     }
 
@@ -280,11 +286,17 @@ def centerView(request, cod_center):
             return redirect('centers')  ## redirects to aliquot page ordered by the most recent
     else:
         center_form = CenterForm(instance=center) # An unbound form
+    
+    try: 
+        API = ApiKey.objects.first()
+    except:
+        API = ""
+        messages.warning(request,"No se encontro una KEY de GOOGLE MAPS, debe agregar una valida desde admin")
 
     context = {
         'center': center,
         'center_form':center_form,
-        'google_api_key': settings.APY_KEY,
+        'google_api_key': API,
 
     }
 
