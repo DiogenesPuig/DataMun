@@ -43,7 +43,7 @@ def logoutView(request):
     logout """
     if request.user.is_authenticated:
         logout(request)
-        return redirect("home")
+        return redirect("login")
 
 @unauthenticated_user
 def loginView(request):
