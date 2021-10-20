@@ -35,4 +35,4 @@ admin.site.register(ApiKey)
 
 
 
-admin.site.site_header = "DaMu administracion de la provincio de cordoba"
+admin.site.site_header = "Damu administracion de la Provincia de Córdoba"

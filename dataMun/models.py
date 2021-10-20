@@ -87,9 +87,13 @@ class DiagnosticCases(models.Model):
     center = models.ForeignKey(Center,related_name="diagnostic_cases",on_delete=models.CASCADE,blank=True)
     week = models.ForeignKey(Week,on_delete=models.CASCADE,blank=True)
     creation = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         str = 'sex: ' + self.sex.name + ' age: ' + self.age.__str__() + ' diagnostic: ' + self.diagnostic.__str__()
         return str
+
+    class Meta:
+        verbose_name_plural = "Diagnostic cases"
 
 
 

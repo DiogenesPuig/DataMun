@@ -10,7 +10,7 @@ router.register(r'centers', CenterReadonlyViewSet)
 
 
 urlpatterns = [
-    path('',homeView, name="home"),
+    path('',diagnosticsView, name="diagnostics"),
 
     path('login/', loginView, name="login"),
     path('register/', registerView, name="register"),
@@ -19,7 +19,7 @@ urlpatterns = [
 
     path('uploadFile/', uploadFileView, name="uploadFile"),
 
-    path('diagnostics/', diagnosticsView, name="diagnostics"),
+    path('help/', helpView, name="help"),
     path('diagnostics/<str:cod_diagnostic>', diagnosticView,name="diagnostic"),
 
     path('centers/', centersView, name="centers"),

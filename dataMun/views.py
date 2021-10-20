@@ -26,11 +26,11 @@ import datetime
 
 
 # Create your views here.
-def homeView(request):
+def helpView(request):
     context = {
 
     }
-    return render(request, 'home.html', )
+    return render(request, 'help.html', )
 
 @login_required()
 def perfilView(request):
@@ -77,7 +77,7 @@ def registerView(request):
             user = form.save()
             username = form.cleaned_data.get('username')
 
-            messages.success(request, "Account was created for " + username)
+            messages.success(request, "Cuenta creada para " + username)
             return redirect('login')
     context = {
         'form': form
@@ -85,12 +85,12 @@ def registerView(request):
     return render(request, 'register.html', context)
 
 
-def homeView(request):
+def helpView(request):
     """This view function render Home"""
     context = {
 
     }
-    return render(request, 'home.html', )
+    return render(request, 'help.html', )
 
 
 class PaceintePorDiagnostico():
@@ -170,7 +170,7 @@ def diagnosticView(request, cod_diagnostic):
     w = WeekFilter(request.GET)
     num_years = 3
     if request.GET:
-        messages.info(request, "Filters aplied")
+        messages.success(request, "Filtros aplicados correctamente")
         try:
             year = Year.objects.get(pk=request.GET.get('year')).year
         except:
@@ -252,7 +252,7 @@ def uploadFileView(request):
                 success = insertWorkbook(file)
             except:
 
-                messages.success(request, "Error formato de hoja de calculos incorrecto.")
+                messages.error(request, "Error formato de hoja de calculos incorrecto.")
                 return redirect("uploadFile")
             file = form.save()
             file = SpreadSheet.objects.get(pk=file.id)
