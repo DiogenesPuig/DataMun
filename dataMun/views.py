@@ -208,7 +208,7 @@ def diagnosticView(request, cod_diagnostic):
     quartiles, cumulative_quartiles = GetGraphicQuartiles(p.qs, diagnostic, weeks, year, num_years)
     print('graphic 2 Ok')
     try: 
-        API = ApiKey.objects.first()
+        API = ApiKey.objects.first().key
     except:
         API = ""
         messages.warning(request,"No se encontro una KEY de GOOGLE MAPS, debe agregar una valida desde admin")
@@ -288,7 +288,7 @@ def centerView(request, cod_center):
         center_form = CenterForm(instance=center) # An unbound form
     
     try: 
-        API = ApiKey.objects.first()
+        API = ApiKey.objects.first().key
     except:
         API = ""
         messages.warning(request,"No se encontro una KEY de GOOGLE MAPS, debe agregar una valida desde admin")

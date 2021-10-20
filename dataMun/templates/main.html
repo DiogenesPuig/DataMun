@@ -59,16 +59,10 @@
             }
         </script>   
         <main>
-            {% if messages %}
-                {% for message in messages %}
-                    <div style="text-align: center ;background-color: #3ac26e; color: white; font-size: 1.1rem;">
-                        {{ message|safe }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+            
 
             {% block content %}
-                <i class="material-icons">message</i>
+                
             {% endblock %}
         </main>
         <div id="down"></div>
@@ -100,5 +94,31 @@
 
     
     <script type="text/javascript"  src="{% static 'js/index.js' %}"></script>
+<style>
+.success{
+    background-color: green;
+    font-weight: bold;
+}
+.error{
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+.warning{
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+.phone-field-ext { display: none; }
+</style>
+{% if messages %}
+    {% for message in messages %}
+        
+        <script>
+            M.toast({html: '{{ message|safe }}',classes: 'rounded center {%  if message.tags %}{{ message.tags }}{% endif %}',displayLength:3000});
+        </script>
+    
+    {% endfor %}
 
+{% endif %}
 </html>
