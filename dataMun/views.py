@@ -39,7 +39,7 @@ def perfilView(request):
 
 
 def logoutView(request):
-    """This view function is used to redirect to home when you
+    """This view function is used to redirect to diagnostics when you
     logout """
     if request.user.is_authenticated:
         logout(request)
@@ -59,7 +59,7 @@ def loginView(request):
             try:
                 return redirect(request.POST.get('next'))
             except:
-                return redirect('home')
+                return redirect('diagnostis')
         else:
             messages.error(request, "Usuario o Contraseña Incorrecta")
 
@@ -86,7 +86,7 @@ def registerView(request):
 
 
 def helpView(request):
-    """This view function render Home"""
+    """This view function render help"""
     context = {
 
     }
