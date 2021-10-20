@@ -59,7 +59,10 @@ class CreateUserForm(UserCreationForm):
         self.fields['first_name'].required = True
 
 class DiagnosticForm(ModelForm):
-    
+    alert = forms.BooleanField()
     class Meta:
         model = Diagnostic
         fields = ['alert']
+    def __init__(self, *args, **kwargs):
+        super(DiagnosticForm, self).__init__(*args, **kwargs)
+        self.fields['alert'].blank = False
