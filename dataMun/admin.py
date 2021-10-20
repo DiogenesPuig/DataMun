@@ -15,6 +15,7 @@ class DiagnosticAdmin(admin.ModelAdmin):
 class DiagnosticCasesAdmin(admin.ModelAdmin):
     list_display = ('sex','age','diagnostic','center','cases','week')
     list_filter = ('sex','age','diagnostic','center','week')
+    
 
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('year','week',)
